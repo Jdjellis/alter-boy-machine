@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alter Boy — Algorithmic Playlist Strategy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..700&family=Hanken+Grotesk:wght@300..800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#070710;
+    --bg2:#0d0d1a;
+    --panel:#11111f;
+    --panel-edge:#23233a;
+    --ink:#ece9f5;
+    --ink-soft:#a8a4c2;
+    --ink-faint:#6f6a8e;
+    --glow:#7df9ff;
+    --rose:#ff7ac6;
+    --gold:#ffd76b;
+    --maxw:920px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:
+      radial-gradient(1200px 600px at 12% -5%, rgba(125,249,255,.10), transparent 60%),
+      radial-gradient(900px 700px at 100% 10%, rgba(255,122,198,.08), transparent 55%),
+      var(--bg);
+    color:var(--ink);
+    font-family:'Hanken Grotesk',system-ui,sans-serif;
+    font-weight:380;
+    line-height:1.62;
+    letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased;
+    padding:0 22px 120px;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.045;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode:screen;
+  }
+  .wrap{max-width:var(--maxw);margin:0 auto;position:relative;z-index:2}
+
+  header{padding:90px 0 54px;border-bottom:1px solid var(--panel-edge)}
+  .kicker{
+    font-size:.72rem;letter-spacing:.42em;text-transform:uppercase;
+    color:var(--glow);font-weight:600;margin-bottom:26px;
+    display:flex;align-items:center;gap:14px;
+  }
+  .kicker::after{content:"";height:1px;flex:1;background:linear-gradient(90deg,var(--glow),transparent)}
+  h1{
+    font-family:'Fraunces',serif;font-weight:600;font-size:clamp(2.7rem,7vw,4.6rem);
+    line-height:.98;letter-spacing:-.02em;
+  }
+  h1 em{font-style:italic;color:var(--rose);font-weight:500}
+  .dek{
+    margin-top:26px;max-width:640px;font-size:1.12rem;color:var(--ink-soft);
+    font-weight:360;
+  }
+  .meta{
+    margin-top:34px;display:flex;flex-wrap:wrap;gap:8px 26px;
+    font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);
+  }
+
+  section{padding:58px 0;border-bottom:1px solid rgba(35,35,58,.55)}
+  .sec-no{
+    font-family:'Fraunces',serif;font-size:.85rem;color:var(--glow);
+    letter-spacing:.3em;font-weight:500;display:block;margin-bottom:14px;font-style:italic;
+  }
+  h2{
+    font-family:'Fraunces',serif;font-weight:540;font-size:clamp(1.7rem,3.8vw,2.5rem);
+    line-height:1.05;letter-spacing:-.015em;margin-bottom:22px;
+  }
+  h3{
+    font-family:'Hanken Grotesk',sans-serif;font-weight:680;font-size:1.06rem;
+    letter-spacing:.01em;margin:30px 0 8px;color:var(--ink);
+  }
+  p{margin-bottom:16px;color:var(--ink-soft)}
+  p strong, li strong{color:var(--ink);font-weight:620}
+  .lead{font-size:1.18rem;color:var(--ink);font-weight:400;line-height:1.55}
+  .lead .hl{color:var(--glow)}
+  a{color:var(--glow);text-decoration:none;border-bottom:1px solid rgba(125,249,255,.3)}
+
+  ul{list-style:none;margin:14px 0 18px}
+  ul li{position:relative;padding-left:26px;margin-bottom:13px;color:var(--ink-soft)}
+  ul li::before{
+    content:"◇";position:absolute;left:0;top:0;color:var(--rose);font-size:.8rem;
+  }
+
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:26px}
+  .card{
+    background:linear-gradient(165deg,var(--panel),var(--bg2));
+    border:1px solid var(--panel-edge);border-radius:14px;padding:26px 24px;
+  }
+  .card.them{opacity:.92}
+  .card.us{border-color:rgba(125,249,255,.4);box-shadow:0 0 0 1px rgba(125,249,255,.12),0 24px 60px -30px rgba(125,249,255,.35)}
+  .card .tag{font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:6px}
+  .card.us .tag{color:var(--glow)}
+  .card .who{font-family:'Fraunces',serif;font-size:1.35rem;margin-bottom:16px;font-weight:540}
+  .card.us .who em{font-style:italic;color:var(--rose)}
+  .card ul li{font-size:.95rem;margin-bottom:10px}
+
+  .bets{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:24px}
+  .bet{
+    background:linear-gradient(160deg,rgba(125,249,255,.06),rgba(255,122,198,.04));
+    border:1px solid var(--panel-edge);border-radius:14px;padding:28px 26px;position:relative;overflow:hidden;
+  }
+  .bet .num{font-family:'Fraunces',serif;font-style:italic;font-size:3.4rem;color:rgba(125,249,255,.25);line-height:1;position:absolute;top:14px;right:20px}
+  .bet h3{margin-top:0;color:var(--glow);font-size:1.18rem}
+  .bet p{font-size:.96rem;margin-bottom:10px}
+  .bet p:last-child{margin-bottom:0}
+
+  .pool{
+    border-left:2px solid var(--glow);padding:4px 0 4px 22px;margin:22px 0;
+  }
+  .pool .ph{font-weight:700;color:var(--ink);font-size:1.02rem;margin-bottom:4px}
+  .pool .tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+  .chip{
+    font-size:.78rem;background:rgba(255,255,255,.04);border:1px solid var(--panel-edge);
+    padding:4px 11px;border-radius:100px;color:var(--ink-soft);letter-spacing:.01em;
+  }
+
+  .tl{margin-top:26px;border-left:1px solid var(--panel-edge);padding-left:0}
+  .phase{position:relative;padding:0 0 30px 30px;border-left:1px solid var(--panel-edge);margin-left:6px}
+  .phase:last-child{border-left-color:transparent;padding-bottom:0}
+  .phase::before{content:"";position:absolute;left:-6px;top:3px;width:11px;height:11px;border-radius:50%;background:var(--glow);box-shadow:0 0 0 4px rgba(125,249,255,.14)}
+  .phase .when{font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;color:var(--rose);font-weight:700;margin-bottom:4px}
+  .phase .pt{font-weight:680;color:var(--ink);margin-bottom:5px}
+  .phase p{font-size:.95rem;margin-bottom:0}
+
+  .seq{display:grid;grid-template-columns:1fr;gap:18px;margin-top:28px}
+  .seq-card{
+    background:linear-gradient(165deg,var(--panel),var(--bg2));
+    border:1px solid var(--panel-edge);border-radius:14px;padding:26px 28px;position:relative;
+  }
+  .seq-card .ph-no{
+    font-family:'Fraunces',serif;font-style:italic;font-size:.78rem;
+    letter-spacing:.3em;color:var(--glow);font-weight:500;margin-bottom:6px;text-transform:uppercase;
+  }
+  .seq-card h3{font-family:'Fraunces',serif;font-size:1.45rem;font-weight:540;letter-spacing:-.005em;margin:0 0 8px;color:var(--ink)}
+  .seq-card .gist{font-size:1.02rem;color:var(--ink-soft);font-style:italic;margin-bottom:18px}
+  .seq-card ul{margin:0 0 16px}
+  .seq-card ul li{font-size:.95rem;margin-bottom:9px}
+  .seq-card .footnotes{margin-top:14px;padding-top:14px;border-top:1px dashed rgba(35,35,58,.9);display:grid;gap:8px}
+  .seq-card .fn{font-size:.86rem;color:var(--ink-soft);display:flex;gap:10px}
+  .seq-card .fn .lbl{color:var(--rose);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:.7rem;flex-shrink:0;min-width:74px;padding-top:2px}
+
+  .stack{margin-top:24px;border:1px solid var(--panel-edge);border-radius:14px;overflow:hidden}
+  .row{display:grid;grid-template-columns:1.1fr 2fr .8fr;gap:0;border-bottom:1px solid var(--panel-edge)}
+  .row:last-child{border-bottom:none}
+  .row > div{padding:15px 18px}
+  .row.head{background:rgba(125,249,255,.06);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--glow);font-weight:700}
+  .row .layer{font-weight:680;color:var(--ink);font-size:.96rem}
+  .row .detail{color:var(--ink-soft);font-size:.92rem}
+  .row .verdict{font-weight:700;font-size:.82rem;letter-spacing:.04em}
+  .v-build{color:var(--glow)}
+  .v-buy{color:var(--gold)}
+  .v-skip{color:var(--ink-faint)}
+
+  .pstack{margin-top:24px;border:1px solid var(--panel-edge);border-radius:14px;overflow:hidden}
+  .prow{display:grid;grid-template-columns:.9fr .6fr 2.2fr;gap:0;border-bottom:1px solid var(--panel-edge)}
+  .prow:last-child{border-bottom:none}
+  .prow > div{padding:15px 18px}
+  .prow.head{background:rgba(125,249,255,.06);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--glow);font-weight:700}
+  .prow .pname{font-weight:680;color:var(--ink);font-size:.98rem}
+  .prow .pshare{color:var(--ink-soft);font-size:.92rem;font-variant-numeric:tabular-nums}
+  .prow .pjob{color:var(--ink-soft);font-size:.92rem}
+  .prow .pname .role{display:block;font-weight:500;font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint);margin-top:4px}
+
+  .budget{
+    margin-top:26px;background:linear-gradient(160deg,var(--panel),var(--bg2));
+    border:1px solid var(--panel-edge);border-radius:14px;padding:24px 26px;
+  }
+  .budget .bh{font-family:'Fraunces',serif;font-size:1.2rem;margin-bottom:14px;font-weight:540}
+  .budget .bh span{color:var(--glow)}
+
+  .metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:24px}
+  .metric{background:var(--panel);border:1px solid var(--panel-edge);border-radius:12px;padding:20px}
+  .metric .big{font-family:'Fraunces',serif;font-size:2rem;color:var(--glow);line-height:1;font-weight:600}
+  .metric .lbl{margin-top:8px;font-size:.88rem;color:var(--ink-soft)}
+  .metric .src{margin-top:10px;font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint)}
+
+  .callout{
+    background:rgba(255,122,198,.06);border:1px solid rgba(255,122,198,.25);
+    border-radius:12px;padding:20px 24px;margin:24px 0;color:var(--ink);font-size:1rem;
+  }
+  .callout strong{color:var(--rose)}
+  .callout.cool{background:rgba(125,249,255,.05);border-color:rgba(125,249,255,.22)}
+  .callout.cool strong{color:var(--glow)}
+
+  footer{padding:50px 0 0;color:var(--ink-faint);font-size:.84rem}
+  footer .note{border-top:1px solid var(--panel-edge);padding-top:24px}
+
+  .fade{opacity:0;transform:translateY(14px);animation:rise .8s cubic-bezier(.2,.7,.2,1) forwards}
+  @keyframes rise{to{opacity:1;transform:none}}
+  header .fade:nth-child(1){animation-delay:.05s}
+  header .fade:nth-child(2){animation-delay:.16s}
+  header .fade:nth-child(3){animation-delay:.28s}
+  header .fade:nth-child(4){animation-delay:.40s}
+
+  @media(max-width:680px){
+    .split,.bets,.metrics{grid-template-columns:1fr}
+    .row,.prow{grid-template-columns:1fr;gap:2px}
+    .row.head,.prow.head{display:none}
+    .row > div,.prow > div{padding:10px 16px}
+    body{padding:0 16px 80px}
+    header{padding:60px 0 40px}
+    .seq-card{padding:22px 22px}
+    .seq-card .fn{flex-direction:column;gap:2px}
+    .seq-card .fn .lbl{min-width:0}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="kicker fade">For the band · Internal · Discover deep-dive</div>
+    <h1 class="fade">Feeding the<br>Machine <em>on our<br>own terms</em></h1>
+    <p class="dek fade">The deep-dive on the first leg of <strong>The Plan</strong> — Discover. How we get onto the algorithmic playlists on our own terms, generate the signals that make the algorithm carry us, and turn cold listeners into the start of a path that ends in a room. We borrow the Intellijend release engine's mechanics; we never borrow its faceless, single-mill creative.</p>
+    <div class="meta fade">
+      <span>Alter Boy</span><span>Perth / WA</span><span>v4 · Companion to The Plan</span>
+    </div>
+  </header>
+
+  <section>
+    <span class="sec-no">01 — Where we are</span>
+    <h2>Five years in, the old doors are getting harder to push open.</h2>
+    <p class="lead">We're not the new band anymore. <span class="hl">The pathways that used to open for new acts — high-rotation triple j, the "freshest find" editorial spots, that first-spin attention — increasingly don't open as readily for acts with a catalogue behind them.</span> What <em>is</em> still wide open, and genuinely doesn't care how long we've been going, is the algorithmic layer: Discover Weekly and Release Radar on Spotify, New Music Mix and Favourites Mix on Apple, the equivalents on Tidal and YouTube Music.</p>
+    <p>There's no editor to win over here. These playlists put songs in front of listeners based purely on how listeners <em>behave</em> — what they save, what they replay, what they skip, what they add to their own playlists. That's the opportunity: we don't need anyone's permission. It's also the bar: we have to actually generate those signals. Spotify gets most of the airtime in here because it's where most of the audience and most of the data live — but the same principles travel across the platforms.</p>
+    <div class="callout cool"><strong>Where this sits.</strong> The Plan lays out three moves — Discover, then the back-catalogue, then Deepen. This document is the deep-dive on the first one. Hold onto one thing the whole way through: the algorithm is never the destination. Saves and placements are how we find the people; <em>the room</em> is what we're finding them for. Everything below is in service of that.</div>
+  </section>
+
+  <section>
+    <span class="sec-no">02 — Where the edge is</span>
+    <h2>Intellijend's engine is good. It's also built for the opposite of us — which turns out to be the edge.</h2>
+    <p>Intellijend's setup automates the Meta-ads-to-Spotify pipeline: front-load the budget early, run a bunch of creative variants, drop the ones not working fast, optimise for cost-per-listener, send everything through one smart link. It works. But it works <em>best</em> for a very specific kind of artist — someone putting out interchangeable down-the-middle dance tracks, one a month, forever. Even their own ad packs are stock footage. The audience that liked track one likes track two because track two sounds like track one.</p>
+    <p>We're the opposite of that. And the two things their tool can't hand an artist — a recognisable world and an audience that already cares — we already have.</p>
+
+    <div class="split">
+      <div class="card them">
+        <div class="tag">Who it's built for</div>
+        <div class="who">Generic dance / EDM</div>
+        <ul>
+          <li>Interchangeable tracks, one lane</li>
+          <li>Sound is the product; no face, no story</li>
+          <li>Creative = stock footage + a hook</li>
+          <li>Cold audience every campaign</li>
+          <li>Compounds because everything sounds the same</li>
+        </ul>
+      </div>
+      <div class="card us">
+        <div class="tag">Who we are</div>
+        <div class="who">Queerlectro pop <em>noir</em></div>
+        <ul>
+          <li>Dark, sparkling, specific sound &amp; songwriting</li>
+          <li>Auslan as a visual signature of the songs</li>
+          <li>A scroll-stopping visual &amp; live identity, built around Molly</li>
+          <li>Five years of catalogue, audience and data</li>
+          <li>A real fanbase we can pull into something we own</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout"><strong>The point:</strong> our identity isn't a problem to work around — it's the actual edge that makes our ads stop the thumb and our saves stick. We borrow Jend's mechanics; we never borrow his creative model.</div>
+
+    <h3>The mechanics we take wholesale</h3>
+    <p>None of the following is where we're different, so we borrow it as-is and don't burn brain on it:</p>
+    <ul>
+      <li><strong>Pre-save campaign</strong> submitted to Spotify for Artists about four weeks ahead, so we land in followers' Release Radar on day one.</li>
+      <li><strong>One conversion-optimised smart link</strong> as the single destination for everything — pre-save first, then save/follow once we're live.</li>
+      <li><strong>Front-loaded budget</strong> concentrated in the first 3–10 days. Momentum in that window is what the algorithm actually reads.</li>
+      <li><strong>Multiple creative variants</strong> running at once; drop the ones not working fast, scale up the winner.</li>
+      <li><strong>Optimise for saves and cost-per-listener,</strong> not raw reach. A save is worth a lot more than a stream.</li>
+      <li><strong>A consistent release rhythm</strong> so each one feeds the next and the catalogue compounds.</li>
+    </ul>
+  </section>
+
+  <section>
+    <span class="sec-no">03 — How the machine reads us</span>
+    <h2>No editor to win over — just a test we have to pass.</h2>
+    <p class="lead">Every platform we care about rewards the same handful of listener behaviours. Win them and the algorithm carries the song further on its own; miss them and it quietly contains it. <span class="hl">There's nobody to pitch — only behaviour to earn.</span></p>
+
+    <h3>The behaviours that actually move us</h3>
+    <ul>
+      <li><strong>Saves, Loves and library adds</strong> — the single strongest signal. A save is worth far more than a stream, so it's the thing we optimise hardest for.</li>
+      <li><strong>Completion</strong> — people listening to the end rather than bailing halfway.</li>
+      <li><strong>Low early skips</strong> — the first ~30 seconds have to hold attention or the algorithm reads "doesn't stick."</li>
+      <li><strong>Repeat plays and re-watches</strong> — the same listener coming back, which is exactly what our layered work earns honestly (see §04).</li>
+      <li><strong>Playlist adds</strong> — listeners filing us into their own rotation.</li>
+    </ul>
+    <p>So we judge a campaign on saves and cost-per-listener, never on raw reach. One save tells the algorithm more than a thousand passive impressions — reach and impressions are diagnostics, not goals.</p>
+
+    <h3>Day one is the exam</h3>
+    <div class="callout cool"><strong>Why day-one matters so much.</strong> Release Radar isn't really a discovery playlist — it's a test. Spotify uses it to ask: "how do the listeners who already have some connection to this artist react to this new track?" If those first listeners skip or don't save, the algorithm reads that and quietly contains the song. Our owned audience isn't just a nice spike-generator — it's the test cohort we engineer for the algorithm to watch.</div>
+    <p>That's also why we front-load. The first 3–10 days are the window the algorithm actually reads, and concentrated momentum there is what tips it into testing the song in Discover Weekly, Radio and autoplay. Spread the same budget thin across a month and the signal never spikes hard enough to register. Momentum in that window is the whole game — the rest of this doc is about manufacturing it.</p>
+  </section>
+
+  <section>
+    <span class="sec-no">04 — Where we don't follow the template</span>
+    <h2>Six places we deliberately go our own way.</h2>
+
+    <h3>1 · Creative is the moat, treated as choreography</h3>
+    <p>No generic mood footage. Every ad is a bespoke cut of the live show, the Auslan, the styling, the world we already make. The way to think about Auslan in our marketing is the way Sia thought about choreography with Maddie Ziegler, or the way FKA twigs treats movement — as the song's visual signature, not as a banner about who we are. Higher craft means higher thumb-stop means higher save-rate per dollar. This is the one place we put in more effort than Jend's artists do, because it's the one place we can't be copied.</p>
+
+    <h3>2 · One taste-world, four ways into it</h3>
+    <p>Not two pools, not a "values audience." One unified taste-world — sonic neighbours plus visual-culture, movement and editorial-aesthetic audiences — split into ad sets so we can see which sub-cluster actually converts (see §05). The audience is one thing; running it in clusters is just how we read the data.</p>
+
+    <h3>3 · Dodge the novelty ceiling on purpose</h3>
+    <p>We've already named the risk ourselves — being boxed as a "queer / trans / Deaf novelty act." So the hook leads with sound and visual world; the Deaf and queer identity is texture that deepens what people feel about us once they're in, not the pitch that pulls them in. The algorithm doesn't reward admiration — it rewards repeat-plays. Goodwill that doesn't actually convert to saves quietly hurts our signal. The targeting guardrail in §05 keeps this honest on the paid side.</p>
+
+    <h3>4 · Build the asset Jend's artists don't have — an audience we own</h3>
+    <p>Five years of audience reception is sitting out there as people who know us but aren't on any list we own. Pulling them somewhere we control gives every release a coordinated day-one save spike — exactly the signal the algorithm tests on first. The backbone is an <strong>email list</strong>: it doesn't expire, can't be throttled, and survives whatever happens to any single platform. <strong>Instagram</strong> is where we already are, so it's the natural place to stay present and rally people on release day without turning into content machines. <strong>Discord</strong> we hold in reserve — a community only works if people genuinely want to talk to each other and someone keeps it alive, and a dead one is worse than none, so we stand it up only if that demand actually shows. The list carries the message; the owned surface turns day one into <em>coordinated action</em> rather than a passive notification, and insulates us if any single platform's algorithm or ad account ever goes sideways.</p>
+
+    <h3>5 · Lean on the back-catalogue</h3>
+    <p>Five years of releases means Spotify, Apple and YouTube already have data on us, and we have a discography for new Discover Weekly / New Music Mix listeners to fall into. New artists can't do this. New singles are the spearhead; the catalogue is the net behind them — and, as The Plan frames it, the thing that carries a curious listener across into someone who actually cares.</p>
+
+    <h3>6 · Let the depth do the work</h3>
+    <p>Our songs exist in two languages at the same time, and they don't say identical things. Auslan has its own grammar, register and emphasis — what's signed isn't a subtitle running under the song, it's a parallel expression of it. Which means there's genuinely more in our work than a single viewing can hold. The rewatch isn't a puzzle to crack — it's the natural response to art with layers, the way a film or a poem rewards a second sitting. And rewatching and re-listening are exactly the listener behaviours the algorithm pays out on. Most artists have to manufacture rewatchability. We don't have to; it's already in how we make music. Our job is just to make sure the creative shows that depth honestly, instead of flattening it into a hook.</p>
+  </section>
+
+  <section>
+    <span class="sec-no">05 — Who we're trying to reach</span>
+    <h2>One taste-world, four sub-clusters, run separately so we can read them.</h2>
+    <p>The audience is one thing — listeners whose taste already overlaps with what we make. We just split it into sub-clusters at the ad-set level so we can see which one actually converts and shift budget around without sentiment. Different creative cuts emphasise whichever dimension that sub-cluster cares about most.</p>
+
+    <div class="pool">
+      <div class="ph">Sub-cluster A · Sonic neighbours</div>
+      <p>Our actual musical adjacency — listeners of acts we genuinely sit beside sonically. This is the durable conversion engine. Creative leads on song and sound.</p>
+      <div class="tags">
+        <span class="chip">James Blake</span><span class="chip">BANKS</span><span class="chip">London Grammar</span>
+        <span class="chip">Empire of the Sun</span><span class="chip">Christine and the Queens</span>
+        <span class="chip">Perfume Genius</span><span class="chip">SOPHIE / hyperpop</span>
+        <span class="chip">Arca · Sega Bodega</span>
+      </div>
+    </div>
+
+    <div class="pool">
+      <div class="ph">Sub-cluster B · Visual culture &amp; music-video</div>
+      <p>People who watch music for its visual seriousness. Creative leads on production design, mood, framing. "Best music videos of 2026" lists live here.</p>
+      <div class="tags">
+        <span class="chip">NOWNESS</span><span class="chip">i-D</span><span class="chip">Pitchfork video</span>
+        <span class="chip">music-video-as-art</span><span class="chip">SSENSE-aesthetic</span>
+      </div>
+    </div>
+
+    <div class="pool">
+      <div class="ph">Sub-cluster C · Movement &amp; choreography</div>
+      <p>Audiences who are tuned in to gesture and bodies. This is where the Auslan-as-choreography reframe lands hardest — and where people are most ready to read what they're seeing as performance rather than novelty.</p>
+      <div class="tags">
+        <span class="chip">FKA twigs taste cluster</span><span class="chip">Rosalía</span>
+        <span class="chip">contemporary dance crossover</span><span class="chip">K-pop choreography fans</span>
+      </div>
+    </div>
+
+    <div class="pool">
+      <div class="ph">Sub-cluster D · Fashion &amp; editorial</div>
+      <p>Aesthetic-leaning audiences who follow looks and styling as closely as sound. Creative leads on portraiture, fashion, the band as visual proposition.</p>
+      <div class="tags">
+        <span class="chip">fashion editorial</span><span class="chip">queer fashion media</span>
+        <span class="chip">noir/dark-pop visual culture</span>
+      </div>
+    </div>
+
+    <div class="callout"><strong>The targeting guardrail.</strong> Don't use Deaf, queer, Auslan, accessibility or inclusion as Meta targeting interests or in primary ad copy. It activates the applause-not-streams audience we don't want, and trains the algorithm to file us under cause rather than craft. Press carries the identity story — that's the right place for it. Paid shows the world. Two surfaces, two different jobs. People discover the identity on the artist page once a song has stopped them; that order of operations turns admiration into real commitment in a way being recruited as a cause never does.</div>
+  </section>
+
+  <section>
+    <span class="sec-no">06 — What a release looks like</span>
+    <h2>One loop, repeated.</h2>
+    <p>The benchmarks below are commonly-cited industry figures — treat them as targets to check against our own Spotify for Artists data, not as gospel.</p>
+    <div class="tl">
+      <div class="phase">
+        <div class="when">T-minus 4 weeks</div>
+        <div class="pt">Prime the radar</div>
+        <p>Submit the track in Spotify for Artists and pitch it through Apple Music for Artists. Launch the pre-save through the smart link. Tease the world to the list and on Instagram — early Auslan moments, behind-the-scenes — so the audience is anticipating it (and seed fragments into Discord too, if it's running). Start warming Sub-cluster A with low-budget engagement creative.</p>
+      </div>
+      <div class="phase">
+        <div class="when">T-minus 1 week</div>
+        <div class="pt">Load the spring</div>
+        <p>Countdown to the list and on Instagram for a coordinated day-one hit. Finalise 4–6 bespoke ad cuts, one per sub-cluster plus variants. Confirm Canvas loop, Apple Music motion artwork, pre-save numbers. Tidal Rising / Spotlight submission filed.</p>
+      </div>
+      <div class="phase">
+        <div class="when">Days 0–3</div>
+        <div class="pt">The window</div>
+        <p>Front-load the budget hard across the four sub-clusters. Fire the list broadcast and the Instagram push on day zero — those are the test cohort the algorithm watches first. All creative variants live; we read save-rate and skip-rate, not reach.</p>
+      </div>
+      <div class="phase">
+        <div class="when">Days 4–10</div>
+        <div class="pt">Feed the winner</div>
+        <p>Kill the ad sets that aren't working, scale the ones that are. This is the 6–10 day window where momentum decides whether the algorithm picks us up and starts testing the song in Radio / Discover Weekly / Apple's autoplay surfaces. The owned audience runs the song's depth in parallel — Instagram posts and list notes on the signed parts, the layered meanings — which drives repeat plays from our most engaged listeners right when the algorithm is watching.</p>
+      </div>
+      <div class="phase">
+        <div class="when">Days 11–30</div>
+        <div class="pt">Catch the spillover</div>
+        <p>As the algorithmic placement kicks in, route the new listeners arriving from Discover Weekly etc. into the back-catalogue — the connector that carries them deeper. Capture them to the list, bring the most engaged closer on Instagram. Log what worked so the next cycle inherits it.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="sec-no">07 — Beyond Spotify</span>
+    <h2>Spotify-first, not Spotify-only.</h2>
+    <p>Every platform rewards the same five behaviours — library saves / Loves / adds, completion, low early skips, repeat plays, playlist adds. Roughly 80% of the Spotify work <em>is</em> the work for everyone else too. The remaining 20% is platform-specific. Subscriber share figures below per MIDiA Research 2026.</p>
+    <div class="pstack">
+      <div class="prow head"><div>Platform</div><div>Global share</div><div>Our approach</div></div>
+      <div class="prow">
+        <div class="pname">Spotify<span class="role">Primary engine</span></div>
+        <div class="pshare">31.7%</div>
+        <div class="pjob">The full playbook in this doc lives here. Even more dominant in Australia than the global average. Also where the engagement signals are most actionable — where the playlists we're targeting actually live.</div>
+      </div>
+      <div class="prow">
+        <div class="pname">Apple Music<span class="role">Secondary, and real</span></div>
+        <div class="pshare">12.6% (~25% US)</div>
+        <div class="pjob">Same engagement signals, two extra jobs per release: really clean metadata at distribution (genre, mood, tempo, instrumentation, lyrical themes — Apple uses it directly), and editorial pitching via Apple Music for Artists, which is genuinely something we can do in a way Spotify's editorial isn't really for us. "Loves" and library adds are our save-equivalent here. Around 10–15% of our paid effort.</div>
+      </div>
+      <div class="prow">
+        <div class="pname">YouTube Music<span class="role">Free upside</span></div>
+        <div class="pshare">9.7%</div>
+        <div class="pjob">Gets fed automatically by the video work. The choreography-led creative we make for the creative pipeline is exactly the asset that moves YouTube. Same asset doing two jobs — no extra effort, real return.</div>
+      </div>
+      <div class="prow">
+        <div class="pname">Tidal<span class="role">Submit and forget</span></div>
+        <div class="pshare">&lt; 1%</div>
+        <div class="pjob">Twenty minutes per release: distribute, submit to Tidal Rising and the Spotlight programme (which pays $100 per editorial placement, no cap). Tiny audience, but a real little revenue lever and some editorial validation. No paid spend.</div>
+      </div>
+      <div class="prow">
+        <div class="pname">Amazon &amp; Deezer<span class="role">Distribute and ignore</span></div>
+        <div class="pshare">11.1% / 1.3%</div>
+        <div class="pjob">Bundled with Prime / not really pitchable. Clean distribution and metadata is all we can do, and all we need to do.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="sec-no">08 — What to buy, what to build</span>
+    <h2>Buy the boring bits. Build the bits that are ours.</h2>
+    <p>The rule: rent anything generic, build anything that <em>is</em> us. The build side is free in cash and squarely in what we can do ourselves.</p>
+
+    <div class="stack">
+      <div class="row head"><div>Layer</div><div>Approach</div><div>Verdict</div></div>
+      <div class="row">
+        <div class="layer">Meta → Spotify ad automation</div>
+        <div class="detail">At under $300/mo, skip the always-on subscription for now — run Meta Ads Manager manually in tight release windows. Revisit Intellijend or similar only once a release is earning back its fee.</div>
+        <div class="verdict v-buy">RENT LATER</div>
+      </div>
+      <div class="row">
+        <div class="layer">Smart link &amp; pre-save</div>
+        <div class="detail">Hypeddit or Feature.fm on free / cheap tiers. The one destination for all traffic; harvest emails at pre-save and keep the most engaged close on Instagram once they confirm.</div>
+        <div class="verdict v-buy">RENT</div>
+      </div>
+      <div class="row">
+        <div class="layer">Distribution metadata discipline</div>
+        <div class="detail">Free lever, big return — especially on Apple. Treat genre / mood / tempo / instrumentation / lyrical-theme tagging as a real deliverable per release, not a box we tick at the distributor and forget.</div>
+        <div class="verdict v-build">BUILD</div>
+      </div>
+      <div class="row">
+        <div class="layer">Creative kit generator</div>
+        <div class="detail">A release <em>SKILL.md</em> that outputs per-single hook angles, ad-copy variants, captions, Canvas loops, Apple motion-artwork briefs and an Auslan / live clip edit-list — in our voice, with the layered-depth principle baked in.</div>
+        <div class="verdict v-build">BUILD</div>
+      </div>
+      <div class="row">
+        <div class="layer">Owned audience — list + presence</div>
+        <div class="detail">Pre-save → email pipeline (Listmonk self-hosted on a ~$5/mo VPS, or a free email tier) as the backbone. Instagram as the day-one rallying surface we already have. Discord held in reserve — stood up only if real two-way demand shows.</div>
+        <div class="verdict v-build">BUILD</div>
+      </div>
+      <div class="row">
+        <div class="layer">Performance dashboard</div>
+        <div class="detail">Pull Spotify for Artists exports + Apple Music for Artists + Meta API into one view: save-rate (saves ÷ unique listeners), skip-rate, CPL by sub-cluster, catalogue spillover, list growth. Replaces a Chartmetric subscription we wouldn't want anyway.</div>
+        <div class="verdict v-build">BUILD</div>
+      </div>
+    </div>
+
+    <div class="budget">
+      <div class="bh">The lean stack · <span>under $300 / month</span></div>
+      <p>At this budget, the trick is <strong>windows, not always-on</strong>. Concentrate the ad spend into the 10-day window of a release — the exact figure to calibrate from the first instrumented release rather than guessed at up front. Realistically that means one well-resourced release window a month. Smart link sits on a free or cheap tier; the email is a ~$5/mo VPS or a free tier; Instagram we already run, and Discord stays in reserve. Everything else is our own build time, which costs nothing in cash and pays back every cycle. Cash goes to <strong>ad spend and craft</strong>, not subscriptions.</p>
+    </div>
+  </section>
+
+  <section>
+    <span class="sec-no">09 — How we know it's working</span>
+    <h2>Signal, not vanity.</h2>
+    <p>Reach and impressions are diagnostics, not goals. The numbers below are what actually move the algorithm and what we should judge a campaign by. The exact cutoffs are industry inference, not anything Spotify or Apple confirm — we use them as starting benchmarks and replace them with our own numbers as soon as we have them.</p>
+    <div class="metrics">
+      <div class="metric">
+        <div class="big">~20%</div>
+        <div class="lbl">Save-rate target on new listeners, calculated as saves ÷ unique listeners (not ÷ streams). The single strongest 2026 algorithm signal.</div>
+        <div class="src">Source: Chartlex analysis of 2,400+ campaigns. Check against our own S4A data.</div>
+      </div>
+      <div class="metric">
+        <div class="big">&lt;30%</div>
+        <div class="lbl">Skip rate in the first ~30 seconds. The intro has to earn attention or the algorithm reads "doesn't stick."</div>
+        <div class="src">Industry benchmark · cross-corroborated across 2026 sources</div>
+      </div>
+      <div class="metric">
+        <div class="big">CPL</div>
+        <div class="lbl">Cost-per-listener by sub-cluster — how we cull losers and scale winners inside the release window. Read by ad-set, not in aggregate.</div>
+        <div class="src">Our own Meta + Spotify reconciliation</div>
+      </div>
+      <div class="metric">
+        <div class="big">Day-1</div>
+        <div class="lbl">Owned-audience save spike on release day — the cold-start killer we actually control, and the test cohort the algorithm watches first (see §03).</div>
+        <div class="src">Our own list + Instagram measurement</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="sec-no">10 — Standing up and tuning the Discovery engine</span>
+    <h2>Five phases. No clock.</h2>
+    <p>This is the operating detail behind The Plan's five phases — the same arc, with the "what this asks" and "done when" spelled out. No fixed timeline: each phase ends on its own definition of done, and only then do we move on. Treating it as a calibration journey rather than a 90-day countdown keeps us honest — we don't burn ad spend before we have infrastructure, we don't tune before we have data, we don't lock the cadence before we've put a real release through it.</p>
+
+    <div class="seq">
+
+      <div class="seq-card">
+        <div class="ph-no">Phase 01</div>
+        <h3>Foundations</h3>
+        <p class="gist">Stand up the infrastructure so any release can route through one funnel and reach an audience we own on day zero.</p>
+        <ul>
+          <li>Pre-save and smart-link tooling configured; one destination for all traffic.</li>
+          <li>Owned audience stood up: an email list (Listmonk on a small VPS, or a free email tier) as the backbone, and our Instagram sharpened into the release-day rallying surface. Discord left in reserve — sketched as a plan, stood up only if two-way demand shows.</li>
+          <li>Existing fanbase pulled in — Bandcamp followers, mailing-list legacy, social DMs, anyone we already informally know about — onto the list and following on Instagram.</li>
+          <li>Distribution metadata audit across the catalogue — clean genre / mood / tempo / instrumentation / lyrical-theme tags, with extra care for Apple's heavier metadata weighting.</li>
+          <li>Creative SKILL.md drafted with the layered-depth principle and the four sub-cluster cuts baked in.</li>
+          <li>Spotify for Artists and Apple Music for Artists access confirmed and connected.</li>
+        </ul>
+        <div class="footnotes">
+          <div class="fn"><div class="lbl">What this asks</div><div>No paid spend yet. We have no data to optimise against, and burning budget on cold infrastructure teaches us nothing.</div></div>
+          <div class="fn"><div class="lbl">Done when</div><div>Any future release can fire through the funnel — pre-save live, list captures, Instagram coordinates, metadata is clean, and the creative kit produces.</div></div>
+        </div>
+      </div>
+
+      <div class="seq-card">
+        <div class="ph-no">Phase 02</div>
+        <h3>Calibration release</h3>
+        <p class="gist">Run one single through the full cycle at lean budget. The goal is clean baseline data, not a hit.</p>
+        <ul>
+          <li>Pre-save submitted ~4 weeks ahead; Apple Music editorial pitch filed in parallel; Tidal Rising / Spotlight submission queued.</li>
+          <li>Four ad sets, one per sub-cluster (sonic neighbours, visual culture, movement, fashion-editorial), with sub-cluster-specific creative cuts from the SKILL.md.</li>
+          <li>Coordinated day-zero push to the list and on Instagram: countdown, drop, a deeper-meaning prompt that runs through the window.</li>
+          <li>List broadcast on release day; the owned surfaces mobilise saves and shares.</li>
+          <li>Window concentration: budget lives in days 0–10, heaviest in days 0–3.</li>
+        </ul>
+        <div class="footnotes">
+          <div class="fn"><div class="lbl">What this asks</div><div>Don't pivot mid-window. Resist the urge to "fix" things while it's running. Collect clean data even if the release underperforms — bad data leads to bad decisions for the next ten releases.</div></div>
+          <div class="fn"><div class="lbl">Done when</div><div>We have a clean read on save rate, CPL by sub-cluster, completion and skip rates, day-one spike size, and early catalogue spillover.</div></div>
+        </div>
+      </div>
+
+      <div class="seq-card">
+        <div class="ph-no">Phase 03</div>
+        <h3>Instrumentation</h3>
+        <p class="gist">Wire up the dashboard so we know our actual numbers, not industry averages.</p>
+        <ul>
+          <li>Spotify for Artists data + Apple Music for Artists + Meta API into a single view.</li>
+          <li>Compute our real numbers: save rate by sub-cluster, CPL by ad set, skip rate by track second, list growth rate, owned-audience engagement (list, Instagram), catalogue spillover into back-catalogue streams.</li>
+          <li>Identify the sub-cluster that actually converts — not the one we assumed would. The visual-culture or movement clusters might out-perform the sonic-neighbour default, or the other way round. Either is a useful finding.</li>
+          <li>Cross-platform reconciliation: how does an Apple Music "Love" rate compare to a Spotify save? Where do YouTube comments cluster around the signed sections?</li>
+        </ul>
+        <div class="footnotes">
+          <div class="fn"><div class="lbl">What this asks</div><div>This is where the data-science side earns the strategy's keep — we replace any Chartmetric price tag and any guesswork with our own observability.</div></div>
+          <div class="fn"><div class="lbl">Done when</div><div>Every campaign metric lives in one place, and we have Alter Boy's actual benchmarks (not borrowed ones) to optimise against.</div></div>
+        </div>
+      </div>
+
+      <div class="seq-card">
+        <div class="ph-no">Phase 04</div>
+        <h3>Refine</h3>
+        <p class="gist">Tune off real data. Make the keep / cut calls.</p>
+        <ul>
+          <li>Cull sub-clusters that under-convert; double down on winners. Reallocate budget shares.</li>
+          <li>Identify the creative archetypes that win — specific cuts, hook angles, hand-moment compositions — and codify them back into the SKILL.md so the next release inherits the learning.</li>
+          <li>Decide whether to subscribe to Intellijend (or an equivalent ad-automation SaaS), grounded in: does the time saved at our actual CPL pay back the fee.</li>
+          <li>Calibrate window budget against actual save-rate-to-CPL economics, replacing assumed figures.</li>
+          <li>Lock the release cadence we can sustain creatively and financially — under-promising on cadence is fine; missing one we promised is corrosive.</li>
+          <li>Document an Apple Music editorial pitch template and rhythm now that we know what lands.</li>
+          <li>Revisit Discord: by now we know whether the demand to talk to each other is real. If it is, stand it up properly; if not, leave it.</li>
+        </ul>
+        <div class="footnotes">
+          <div class="fn"><div class="lbl">What this asks</div><div>Cut without sentiment — including any audience whose engagement is high but save rate is low. Applause without streams hurts our signal, however nice it feels.</div></div>
+          <div class="fn"><div class="lbl">Done when</div><div>The engine is tuned, the cadence is set, toolkit decisions are locked in, and the SKILL.md reflects what we now know rather than what we initially guessed.</div></div>
+        </div>
+      </div>
+
+      <div class="seq-card">
+        <div class="ph-no">Phase 05</div>
+        <h3>Steady-state</h3>
+        <p class="gist">The ongoing release engine. Every cycle compounds the catalogue, the list and the audience — and feeds the room The Plan is ultimately aiming at.</p>
+        <ul>
+          <li>Each release flows through the cycle without us re-thinking it: the SKILL.md produces the creative kit, the dashboard tracks performance, the owned surfaces coordinate day zero, Apple and Tidal get their submissions, the list broadcasts, the algorithm tests us.</li>
+          <li>Catalogue compounds: new Discover Weekly, Apple New Music Mix and YouTube Music Mix listeners get routed into the back-catalogue and captured to the list.</li>
+          <li>Presence deepens: the list and Instagram hold the audience between releases. If a Discord has earned its place by now, it becomes where the most engaged fans live — threads on the layered meanings, live-show coordination, demos. If it hasn't, we don't force it.</li>
+          <li>Catalogue-wide review every few releases: what's the trajectory, what's slipping, what's the next experiment to run alongside (not in place of) the proven loop.</li>
+          <li>Annual recalibration: a fresh look at the benchmarks, the toolkit and the targeting against whatever the platforms have changed in the meantime.</li>
+        </ul>
+        <div class="footnotes">
+          <div class="fn"><div class="lbl">What this asks</div><div>Don't break what works. New experiments run <em>alongside</em> the proven loop, not in place of it. Novelty for its own sake corrodes the very compounding the engine exists to produce.</div></div>
+          <div class="fn"><div class="lbl">Done when</div><div>It doesn't. This is the engine — we're running it now, and handing its output to the back-catalogue and Deepen stages of The Plan.</div></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <footer>
+    <div class="note">
+      Internal working document for Alter Boy · v4 — the Discover deep-dive, companion to The Plan. Benchmarks (save-rate thresholds, release-window timing, Release Radar signals) are drawn from commonly-cited industry sources — primarily Chartlex's 2026 analysis of 2,400+ campaigns — and should be checked against our own Spotify for Artists data before being treated as targets. Subscriber-share figures per MIDiA Research 2026. Tool pricing, platform mechanics and algorithmic surfaces change — verify current details before committing budget.
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

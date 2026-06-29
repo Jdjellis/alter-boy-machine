@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alter Boy — The Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..700&family=Hanken+Grotesk:wght@300..800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#070710;
+    --bg2:#0d0d1a;
+    --panel:#11111f;
+    --panel-edge:#23233a;
+    --ink:#ece9f5;
+    --ink-soft:#a8a4c2;
+    --ink-faint:#6f6a8e;
+    --glow:#7df9ff;
+    --rose:#ff7ac6;
+    --gold:#ffd76b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:
+      radial-gradient(1200px 600px at 12% -5%, rgba(125,249,255,.10), transparent 60%),
+      radial-gradient(900px 700px at 100% 10%, rgba(255,122,198,.08), transparent 55%),
+      var(--bg);
+    color:var(--ink);
+    font-family:'Hanken Grotesk',system-ui,sans-serif;
+    font-weight:380;
+    line-height:1.6;
+    letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased;
+    overflow:hidden;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.045;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode:screen;
+  }
+
+  /* ---------- deck / slides ---------- */
+  .deck{position:fixed;inset:0;z-index:2}
+  .slide{
+    position:absolute;inset:0;
+    display:flex;flex-direction:column;justify-content:center;
+    padding:clamp(28px,6vw,90px);
+    max-width:1100px;margin:0 auto;
+    opacity:0;visibility:hidden;
+    transform:translateY(16px);
+    transition:opacity .5s cubic-bezier(.2,.7,.2,1), transform .5s cubic-bezier(.2,.7,.2,1), visibility .5s;
+    overflow-y:auto;
+  }
+  .slide.active{opacity:1;visibility:visible;transform:none}
+  .slide.active .stagger{animation:rise .7s cubic-bezier(.2,.7,.2,1) backwards}
+  .slide.active .stagger:nth-child(1){animation-delay:.06s}
+  .slide.active .stagger:nth-child(2){animation-delay:.16s}
+  .slide.active .stagger:nth-child(3){animation-delay:.26s}
+  .slide.active .stagger:nth-child(4){animation-delay:.36s}
+  .slide.active .stagger:nth-child(5){animation-delay:.46s}
+  .slide.active .stagger:nth-child(6){animation-delay:.56s}
+  .slide.active .stagger:nth-child(7){animation-delay:.66s}
+  @keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+  .kicker{
+    font-size:.72rem;letter-spacing:.36em;text-transform:uppercase;
+    color:var(--glow);font-weight:600;margin-bottom:26px;
+    display:flex;align-items:center;gap:14px;max-width:560px;
+  }
+  .kicker::after{content:"";height:1px;flex:1;background:linear-gradient(90deg,var(--glow),transparent)}
+
+  h1{
+    font-family:'Fraunces',serif;font-weight:600;font-size:clamp(2.6rem,7vw,5rem);
+    line-height:.98;letter-spacing:-.02em;
+  }
+  h1 em{font-style:italic;color:var(--rose);font-weight:500}
+  h2{
+    font-family:'Fraunces',serif;font-weight:560;font-size:clamp(1.9rem,4.6vw,3.1rem);
+    line-height:1.04;letter-spacing:-.018em;margin-bottom:24px;max-width:26ch;
+  }
+  h2 em{font-style:italic;color:var(--rose)}
+  h2 .g{color:var(--glow)}
+  p{margin-bottom:16px;color:var(--ink-soft);font-size:clamp(1rem,1.5vw,1.18rem);max-width:62ch}
+  p strong, li strong{color:var(--ink);font-weight:620}
+  .lead{font-size:clamp(1.12rem,1.9vw,1.42rem);color:var(--ink);font-weight:400;line-height:1.45;max-width:40ch;margin-bottom:20px}
+  .lead em{font-style:italic;color:var(--glow)}
+  .dek{margin-top:26px;max-width:60ch;font-size:clamp(1.02rem,1.6vw,1.22rem);color:var(--ink-soft)}
+
+  ul{list-style:none;margin:14px 0 18px}
+  ul li{position:relative;padding-left:26px;margin-bottom:13px;color:var(--ink-soft);font-size:clamp(.98rem,1.4vw,1.12rem);max-width:60ch}
+  ul li::before{content:"\25C7";position:absolute;left:0;top:1px;color:var(--rose);font-size:.8rem}
+
+  .pull{
+    margin-top:8px;font-family:'Fraunces',serif;font-style:italic;
+    font-size:clamp(1.15rem,2vw,1.6rem);color:var(--ink);line-height:1.3;max-width:46ch;
+  }
+  .pull .g{color:var(--glow);font-style:normal;font-weight:500}
+  .pull .r{color:var(--rose);font-style:normal;font-weight:500}
+
+  .chip{
+    display:inline-block;font-family:'Hanken Grotesk',sans-serif;
+    font-size:.8rem;background:rgba(255,122,198,.08);border:1px solid rgba(255,122,198,.3);
+    padding:5px 14px;border-radius:100px;color:var(--rose);letter-spacing:.06em;
+    text-transform:uppercase;font-weight:600;margin-top:14px;
+  }
+
+  .callout{
+    background:rgba(255,122,198,.06);border:1px solid rgba(255,122,198,.25);
+    border-radius:12px;padding:18px 22px;margin-top:20px;color:var(--ink);
+    font-size:clamp(.96rem,1.4vw,1.08rem);max-width:60ch;
+  }
+  .callout strong{color:var(--rose)}
+  .callout.cool{background:rgba(125,249,255,.05);border-color:rgba(125,249,255,.22)}
+  .callout.cool strong{color:var(--glow)}
+
+  .sig{margin-top:30px;font-size:.92rem;color:var(--ink-faint);letter-spacing:.04em;font-style:italic}
+
+  /* ---------- shape diagram (slide 6) ---------- */
+  .flow{display:flex;align-items:stretch;gap:0;margin-top:30px;flex-wrap:wrap}
+  .flow-node{
+    flex:1;min-width:180px;
+    background:linear-gradient(165deg,var(--panel),var(--bg2));
+    border:1px solid var(--panel-edge);border-radius:14px;padding:24px 22px;
+  }
+  .flow-node.mid{border-color:rgba(125,249,255,.35);box-shadow:0 0 0 1px rgba(125,249,255,.1)}
+  .flow-node .ft{font-family:'Fraunces',serif;font-size:1.4rem;font-weight:540;margin-bottom:8px;color:var(--ink)}
+  .flow-node.mid .ft{color:var(--glow)}
+  .flow-node p{font-size:.95rem;margin:0;color:var(--ink-soft)}
+  .flow-arrow{display:flex;align-items:center;justify-content:center;color:var(--rose);font-size:1.6rem;padding:0 6px;flex:0 0 34px}
+
+  /* interactive shape (slide 6) */
+  .subhead{font-size:clamp(1.04rem,1.6vw,1.24rem);color:var(--ink);font-weight:400;line-height:1.45;max-width:58ch;margin-bottom:16px}
+  .tap-note{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--glow);font-weight:700;margin-bottom:2px}
+  .flow-node{appearance:none;font-family:inherit;color:inherit;text-align:left;cursor:pointer;position:relative;
+    transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease,background .2s ease}
+  .flow-node .ft{padding-right:36px}
+  .flow-node::after{content:"+";position:absolute;top:15px;right:15px;width:27px;height:27px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;font-size:1.18rem;font-weight:400;line-height:1;
+    border:1px solid currentColor;background:rgba(255,255,255,.03);transition:transform .2s ease,background .2s ease}
+  .flow-node.active::after{content:"\2212"}
+  .flow-node.discover::after{color:var(--glow);border-color:rgba(125,249,255,.6)}
+  .flow-node.deepen::after{color:var(--rose);border-color:rgba(255,122,198,.6)}
+  .flow-node.catalogue::after{color:var(--ink-soft);border-color:var(--panel-edge)}
+  .flow-node.discover.active::after{background:rgba(125,249,255,.16)}
+  .flow-node.deepen.active::after{background:rgba(255,122,198,.16)}
+  .flow-node.catalogue.active::after{background:rgba(168,164,194,.12)}
+  @keyframes badgepulse{0%,100%{transform:scale(1);filter:drop-shadow(0 0 0 transparent)}50%{transform:scale(1.18);filter:drop-shadow(0 0 7px currentColor)}}
+  .flow-interactive.hint-on .flow-node:not(.active)::after{animation:badgepulse 1.7s ease-in-out infinite}
+  .flow-node .more{display:block;margin-top:14px;font-size:.64rem;letter-spacing:.18em;text-transform:uppercase;font-weight:700;color:var(--ink-faint)}
+  .flow-node:hover{transform:translateY(-3px)}
+  .flow-node.discover{border-color:rgba(125,249,255,.5);background:linear-gradient(165deg,rgba(125,249,255,.09),var(--bg2))}
+  .flow-node.discover .ft,.flow-node.discover .more{color:var(--glow)}
+  .flow-node.deepen{border-color:rgba(255,122,198,.5);background:linear-gradient(165deg,rgba(255,122,198,.09),var(--bg2))}
+  .flow-node.deepen .ft,.flow-node.deepen .more{color:var(--rose)}
+  .flow-node.catalogue{background:transparent;border-color:var(--panel-edge);border-style:dashed}
+  .flow-node.catalogue .ft{color:var(--ink)}
+  .flow-node.discover.active{box-shadow:0 0 0 1px var(--glow),0 18px 50px -24px rgba(125,249,255,.6)}
+  .flow-node.deepen.active{box-shadow:0 0 0 1px var(--rose),0 18px 50px -24px rgba(255,122,198,.5)}
+  .flow-node.catalogue.active{border-style:solid;box-shadow:0 0 0 1px var(--ink-soft)}
+
+  .flow-detail{margin-top:22px}
+  .fd-panel{display:none}
+  .fd-panel.show{display:block;animation:rise .45s cubic-bezier(.2,.7,.2,1);
+    background:var(--panel);border:1px solid var(--panel-edge);border-radius:14px;padding:22px 24px}
+  .fd-panel[data-panel="discover"].show{border-color:rgba(125,249,255,.55);box-shadow:0 0 0 1px rgba(125,249,255,.18),0 22px 55px -34px rgba(125,249,255,.5);background:linear-gradient(180deg,rgba(125,249,255,.05),var(--panel))}
+  .fd-panel[data-panel="deepen"].show{border-color:rgba(255,122,198,.55);box-shadow:0 0 0 1px rgba(255,122,198,.16),0 22px 55px -34px rgba(255,122,198,.45);background:linear-gradient(180deg,rgba(255,122,198,.05),var(--panel))}
+  .fd-panel[data-panel="catalogue"].show{border-color:rgba(168,164,194,.5);border-style:dashed}
+  .fd-panel.show p{max-width:none}
+  .fd-head{font-family:'Fraunces',serif;font-size:1.15rem;color:var(--ink);font-weight:540;margin-bottom:12px;display:flex;align-items:center;gap:10px}
+  .fd-dot{width:10px;height:10px;border-radius:50%;flex:0 0 10px}
+  .d-discover{background:var(--glow)}
+  .d-catalogue{background:var(--ink-faint)}
+  .d-deepen{background:var(--rose)}
+  .fd-sub{font-family:'Hanken Grotesk',sans-serif;font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--glow);font-weight:700;margin:20px 0 8px}
+  .cluster-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .cluster-chips span{font-size:.8rem;background:rgba(255,255,255,.04);border:1px solid var(--panel-edge);padding:5px 12px;border-radius:100px;color:var(--ink-soft);letter-spacing:.01em}
+
+  /* ---------- flywheel (slide 7) ---------- */
+  .wheel{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px;align-items:center}
+  .wheel-step{
+    background:rgba(125,249,255,.05);border:1px solid var(--panel-edge);border-radius:100px;
+    padding:9px 18px;font-size:.92rem;color:var(--ink-soft);font-weight:500;
+  }
+  .wheel-step b{color:var(--glow);font-weight:700}
+  .wheel-arrow{color:var(--rose);font-weight:700}
+
+  /* ---------- journey steps (slide 9) ---------- */
+  .steps{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+  .jstep{
+    flex:1;min-width:120px;background:var(--panel);border:1px solid var(--panel-edge);
+    border-radius:12px;padding:16px 16px;
+  }
+  .jstep .n{font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:var(--rose);font-weight:700;margin-bottom:6px}
+  .jstep .t{font-family:'Fraunces',serif;font-size:1.05rem;color:var(--ink);font-weight:540}
+  .jstep .t span{display:block;font-family:'Hanken Grotesk';font-size:.78rem;color:var(--ink-faint);font-weight:400;margin-top:3px;letter-spacing:.02em;text-transform:none}
+
+  /* ---------- two bets / cards (slide 11) ---------- */
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px}
+  .pcard{
+    background:linear-gradient(160deg,rgba(125,249,255,.06),rgba(255,122,198,.04));
+    border:1px solid var(--panel-edge);border-radius:14px;padding:24px 24px;position:relative;overflow:hidden;
+  }
+  .pcard .num{font-family:'Fraunces',serif;font-style:italic;font-size:2.8rem;color:rgba(125,249,255,.22);position:absolute;top:8px;right:18px;line-height:1}
+  .pcard h3{font-family:'Hanken Grotesk';color:var(--glow);font-size:1.1rem;font-weight:700;margin-bottom:8px;max-width:16ch}
+  .pcard p{font-size:.96rem;margin:0;color:var(--ink-soft)}
+
+  /* ---------- owned rows (slide 13) ---------- */
+  .own{display:grid;gap:12px;margin-top:24px}
+  .own-row{
+    background:var(--panel);border:1px solid var(--panel-edge);border-radius:12px;padding:16px 22px;
+    display:grid;grid-template-columns:.8fr 2.4fr;gap:6px 22px;align-items:start;
+  }
+  .own-row .name{font-family:'Fraunces',serif;font-size:1.16rem;font-weight:540;color:var(--ink)}
+  .own-row .name .verdict{display:block;font-family:'Hanken Grotesk';font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;font-weight:700;margin-top:5px}
+  .v-core{color:var(--glow)} .v-now{color:var(--gold)} .v-hold{color:var(--ink-faint)}
+  .own-row p{font-size:.93rem;margin:0;color:var(--ink-soft)}
+
+  /* ---------- phases (slide 14) ---------- */
+  .phases{display:grid;gap:10px;margin-top:24px}
+  .phase{
+    display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:baseline;
+    border-left:1px solid var(--panel-edge);padding:4px 0 4px 20px;position:relative;
+  }
+  .phase::before{content:"";position:absolute;left:-5px;top:9px;width:9px;height:9px;border-radius:50%;background:var(--glow);box-shadow:0 0 0 3px rgba(125,249,255,.14)}
+  .phase .pn{font-family:'Fraunces',serif;font-style:italic;color:var(--glow);font-size:.9rem;letter-spacing:.1em;min-width:84px;text-transform:uppercase;font-weight:500}
+  .phase .pb{font-size:.98rem;color:var(--ink-soft)}
+  .phase .pb b{color:var(--ink);font-weight:680}
+
+  /* ---------- chrome: progress, counter, nav, overview ---------- */
+  .progress{position:fixed;top:0;left:0;height:2px;background:var(--glow);z-index:20;transition:width .4s cubic-bezier(.2,.7,.2,1);box-shadow:0 0 12px rgba(125,249,255,.6)}
+  .counter{position:fixed;bottom:22px;left:28px;z-index:20;font-size:.78rem;letter-spacing:.16em;color:var(--ink-faint);font-variant-numeric:tabular-nums}
+  .counter b{color:var(--ink);font-weight:600}
+  .hint{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:20;font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-faint);opacity:.7}
+  .hint kbd{background:rgba(255,255,255,.05);border:1px solid var(--panel-edge);border-radius:5px;padding:1px 7px;font-family:inherit;color:var(--ink-soft);font-size:.66rem}
+
+  .nav{position:fixed;bottom:18px;right:24px;z-index:20;display:flex;gap:8px}
+  .nav button{
+    width:42px;height:42px;border-radius:50%;cursor:pointer;
+    background:var(--panel);border:1px solid var(--panel-edge);color:var(--ink-soft);
+    font-size:1.1rem;display:flex;align-items:center;justify-content:center;
+    transition:all .2s ease;
+  }
+  .nav button:hover{border-color:var(--glow);color:var(--glow);transform:translateY(-2px)}
+  .nav button:disabled{opacity:.3;cursor:default;transform:none;border-color:var(--panel-edge);color:var(--ink-faint)}
+
+  /* overview grid */
+  .overview{position:fixed;inset:0;z-index:30;background:rgba(7,7,16,.94);backdrop-filter:blur(8px);
+    display:none;padding:clamp(24px,5vw,60px);overflow-y:auto}
+  .overview.open{display:block}
+  .ov-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;max-width:1200px;margin-inline:auto}
+  .ov-head .t{font-family:'Fraunces',serif;font-size:1.4rem;color:var(--ink)}
+  .ov-head .c{cursor:pointer;color:var(--ink-faint);font-size:.8rem;letter-spacing:.16em;text-transform:uppercase;background:none;border:1px solid var(--panel-edge);border-radius:8px;padding:8px 14px}
+  .ov-head .c:hover{color:var(--glow);border-color:var(--glow)}
+  .ov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;max-width:1200px;margin:0 auto}
+  .ov-cell{
+    background:linear-gradient(165deg,var(--panel),var(--bg2));border:1px solid var(--panel-edge);
+    border-radius:12px;padding:18px;cursor:pointer;transition:all .2s ease;min-height:108px;
+  }
+  .ov-cell:hover{border-color:var(--glow);transform:translateY(-3px)}
+  .ov-cell.current{border-color:var(--rose)}
+  .ov-cell .ovn{font-family:'Fraunces',serif;font-style:italic;font-size:.74rem;letter-spacing:.2em;color:var(--glow);text-transform:uppercase;margin-bottom:8px}
+  .ov-cell .ovt{font-family:'Fraunces',serif;font-size:1.02rem;color:var(--ink);line-height:1.2;font-weight:540}
+
+  @media(max-width:720px){
+    .slide{padding:64px 22px 90px}
+    .cards{grid-template-columns:1fr}
+    .own-row{grid-template-columns:1fr;gap:4px}
+    .flow-arrow{transform:rotate(90deg);flex-basis:100%;padding:4px 0}
+    .phase{grid-template-columns:1fr;gap:2px}
+    .phase .pn{min-width:0}
+    .hint{display:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+
+<div class="deck" id="deck">
+
+  <!-- TITLE -->
+  <section class="slide">
+    <div class="kicker stagger">For the band · From the depths of HXLL</div>
+    <h1 class="stagger">A plan for getting<br>the music <em>heard</em>.</h1>
+    <p class="dek stagger">We're making good work consistently now. We've never put the same effort into getting it to people. This is what I reckon we do about that, and how it adds up to filling rooms.</p>
+    <div class="sig stagger">Alter Boy · Perth / WA · The Plan, v1</div>
+  </section>
+
+  <!-- 1 -->
+  <section class="slide">
+    <div class="kicker stagger">01 — The good news</div>
+    <h2 class="stagger">We've got the <span class="g">hard part</span> down.</h2>
+    <p class="stagger">For a long time the hard bit was just making the stuff — finishing things, keeping it flowing, staying consistent. That was the struggle for years.</p>
+    <p class="stagger">It isn't anymore. We're putting out the best, most consistent work we have.</p>
+    <div class="pull stagger">That part, we've finally <span class="g">sorted</span>.</div>
+  </section>
+
+  <!-- 2 -->
+  <section class="slide">
+    <div class="kicker stagger">02 — The bit we skip</div>
+    <h2 class="stagger">But making it was only ever <em>half the job</em>.</h2>
+    <p class="stagger">We've never been deliberate about marketing or distribution. We make something good, put it out, and hope.</p>
+    <p class="stagger">Good work doesn't get heard on its own. It gets heard when someone treats it like a <strong>product</strong> and takes charge of how it reaches people. We've never really done that.</p>
+    <div class="pull stagger">So I want to <span class="r">take that on</span>.</div>
+  </section>
+
+  <!-- 3 -->
+  <section class="slide">
+    <div class="kicker stagger">03 — The landscape</div>
+    <h2 class="stagger">The ways in have <span class="g">changed</span>.</h2>
+    <p class="stagger">The old ones — triple j rotation, the editorial "fresh find" spots — don't open as easily for a band with a back catalogue as they do for a brand-new act. That's just how it is now.</p>
+    <p class="stagger">But there's a newer way in that doesn't care how long we've been around: <strong>the algorithm</strong>. Discover Weekly, Release Radar, autoplay.</p>
+    <div class="pull stagger">No editor to win over — we just have to <span class="r">earn it</span>.</div>
+  </section>
+
+  <!-- 4 -->
+  <section class="slide">
+    <div class="kicker stagger">04 — What we're actually after</div>
+    <h2 class="stagger">It was never really about <em>streams</em>.</h2>
+    <p class="stagger">Chasing streams for their own sake doesn't add up — nobody makes that money back. What we're actually after is <strong>an audience to play our music to</strong>.</p>
+    <p class="stagger">Mostly the live show, but it can be whatever we want: remixes, side projects, multimodal stuff. That builds our reputation, and reputation is what gets us into the rooms we want.</p>
+    <span class="chip stagger">The Dark Mofo tier</span>
+  </section>
+
+  <!-- 5 -->
+  <section class="slide">
+    <div class="kicker stagger">05 — What's in our favour</div>
+    <h2 class="stagger">What we've <span class="g">actually got</span>.</h2>
+    <p class="stagger">Let's be honest about what we <em>don't</em> have: a big, engaged fanbase. Right now it's more lukewarm awareness and a few industry relationships. But what we <strong>do</strong> have is harder to come by:</p>
+    <ul class="stagger">
+      <li>A <strong>five-year back catalogue</strong> to pull from</li>
+      <li>A real track record — <strong>big festivals, radio play</strong></li>
+      <li><strong>High-quality creative</strong> — live visuals, music videos, photography</li>
+      <li>A strong <strong>visual identity, built around Molly</strong></li>
+    </ul>
+    <div class="pull stagger">Most acts our size don't have <span class="r">that to work with</span>.</div>
+  </section>
+
+  <!-- 6 -->
+  <section class="slide" id="slide-shape">
+    <div class="kicker stagger">06 — The shape</div>
+    <h2 class="stagger">The whole thing, in one picture.</h2>
+    <p class="subhead stagger">Cast wide to find people, use the catalogue to bring them closer, then concentrate to fill a room. That's basically it — the rest is detail.</p>
+    <p class="tap-note stagger">Click any step to see how it works &darr;</p>
+    <div class="flow stagger flow-interactive hint-on">
+      <button type="button" class="flow-node discover" data-target="discover">
+        <div class="ft">Discover</div>
+        <p>Cast wide, find people.</p>
+        <span class="more">Details +</span>
+      </button>
+      <div class="flow-arrow">&rarr;</div>
+      <button type="button" class="flow-node catalogue" data-target="catalogue">
+        <div class="ft">Back catalogue</div>
+        <p>Carry them across.</p>
+        <span class="more">Details +</span>
+      </button>
+      <div class="flow-arrow">&rarr;</div>
+      <button type="button" class="flow-node deepen" data-target="deepen">
+        <div class="ft">Deepen</div>
+        <p>Fill the room.</p>
+        <span class="more">Details +</span>
+      </button>
+    </div>
+
+    <div class="flow-detail stagger" id="flowDetail">
+      <div class="fd-panel" data-panel="discover">
+        <div class="fd-head"><span class="fd-dot d-discover"></span>Discover — cast wide, build the flywheel</div>
+        <p>Grow the listener base with no geographic limits, and optimise purely for what the algorithm actually reads: saves, completion, low early skips, replays. A <strong>save</strong> is worth far more than a stream — it's the strongest signal we can generate — so we chase saves and cost-per-listener, not raw reach. There's no editor to win over; these playlists put songs in front of people based purely on how listeners behave.</p>
+
+        <div class="fd-sub">The flywheel</div>
+        <div class="wheel">
+          <span class="wheel-step"><b>Release</b> (roughly monthly)</span>
+          <span class="wheel-arrow">&rarr;</span>
+          <span class="wheel-step">front-loaded <b>Meta ads</b></span>
+          <span class="wheel-arrow">&rarr;</span>
+          <span class="wheel-step"><b>signal</b> spikes</span>
+          <span class="wheel-arrow">&rarr;</span>
+          <span class="wheel-step">algorithm <b>picks us up</b></span>
+          <span class="wheel-arrow">&#8635;</span>
+        </div>
+        <p style="margin-top:12px">Each release feeds the next and the catalogue builds up. We borrow these mechanics as they are — the creative stays ours.</p>
+
+        <div class="fd-sub">How a release runs</div>
+        <p>Submit a pre-save about four weeks out so we land in followers' Release Radar on day one. Point everything at one smart link, then front-load the ad budget into the first 3&ndash;10 days — that early-momentum window is what decides whether the algorithm picks the song up and starts testing it in Discover Weekly and autoplay.</p>
+
+        <div class="fd-sub">One taste-world, four ways in</div>
+        <p>We run one audience, split into four sub-clusters at the ad-set level, so we can see which actually converts and shift budget without sentiment. Each gets a creative cut that leads on whatever it cares about most.</p>
+        <div class="cluster-chips">
+          <span>Sonic neighbours</span>
+          <span>Visual culture &amp; music-video</span>
+          <span>Movement &amp; choreography</span>
+          <span>Fashion &amp; editorial</span>
+        </div>
+      </div>
+
+      <div class="fd-panel" data-panel="catalogue">
+        <div class="fd-head"><span class="fd-dot d-catalogue"></span>Back catalogue — the connector</div>
+        <p>Five years of songs means every time we reach someone again, it can be a <em>different</em> track — not the same ad on repeat. That's the difference between bringing someone in deeper and just annoying them.</p>
+        <div class="steps">
+          <div class="jstep"><div class="n">01</div><div class="t">Cold<span>never heard us</span></div></div>
+          <div class="jstep"><div class="n">02</div><div class="t">Curious<span>watched one</span></div></div>
+          <div class="jstep"><div class="n">03</div><div class="t">Warming<span>a few cuts in</span></div></div>
+          <div class="jstep"><div class="n">04</div><div class="t">Deep<span>into the vault</span></div></div>
+          <div class="jstep"><div class="n">05</div><div class="t">Convert<span>a room, merch</span></div></div>
+        </div>
+        <p style="margin-top:14px">And the album becomes somewhere to go <strong>deeper</strong> for people who already like us — not bait for strangers. People who already like us hear it completely differently.</p>
+      </div>
+
+      <div class="fd-panel" data-panel="deepen">
+        <div class="fd-head"><span class="fd-dot d-deepen"></span>Deepen — take the map, fill the room</div>
+        <p>Discover draws a map of where our listeners actually are — maybe somewhere we wouldn't have guessed. Deepen focuses on wherever that is and asks for more: a ticket, merch, one of Molly's editions.</p>
+        <div class="callout cool"><strong>The live show is the goal, but it's also part of the loop.</strong> A sold-out small room gives us footage, word-of-mouth, and the most convincing thing we can show a festival booker. So it's not just spending the audience — it's building the case for the next, bigger room.</div>
+
+        <div class="fd-sub">The platforms we use to engage our owned audience</div>
+        <div class="own">
+          <div class="own-row">
+            <div class="name">Email list<span class="verdict v-core">The backbone</span></div>
+            <p>Doesn't expire, can't be throttled, works no matter what happens to any platform. If we build one thing, it's this.</p>
+          </div>
+          <div class="own-row">
+            <div class="name">Instagram<span class="verdict v-now">Start here</span></div>
+            <p>Where we already are — our natural spot for staying present and rallying people on release day. Low effort, since we don't have to turn into content machines.</p>
+          </div>
+          <div class="own-row">
+            <div class="name">Discord<span class="verdict v-hold">In reserve</span></div>
+            <p>A good tool, but only if people actually want to talk to each other and someone keeps it alive. A dead Discord is worse than none. We'd only do it if the demand shows up.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 -->
+  <section class="slide">
+    <div class="kicker stagger">07 — The upside</div>
+    <h2 class="stagger" style="max-width:26ch">Optimising for streaming discovery can be creatively <em>liberating</em>.</h2>
+    <p class="stagger">This is the bit that should appeal to us. The old way: sit on songs, batch them into a release, hand it to PR, wait months. The new way lets us make more, faster, and worry less about polish.</p>
+    <ul class="stagger">
+      <li>Put out <strong>multiple versions</strong> — remixes, slowed, sped up</li>
+      <li>Make <strong>short, hook-led cuts</strong> built around 15 seconds and a mood</li>
+      <li><strong>Try things</strong> and ship them quickly</li>
+      <li>Short and messy beats slow and quarterly</li>
+    </ul>
+    <div class="pull stagger">The work that feeds the loop is the same work that lets us <span class="g">experiment</span>.</div>
+  </section>
+
+  <!-- 8 -->
+  <section class="slide">
+    <div class="kicker stagger">08 — Where the effort goes</div>
+    <h2 class="stagger">If we only get <em>two things</em> right.</h2>
+    <p class="stagger">Most of this is plumbing we can rent. Two things we can't — and that's where the effort should go:</p>
+    <div class="cards stagger">
+      <div class="pcard">
+        <div class="num">01</div>
+        <h3>A creative pipeline built around our world</h3>
+        <p>Turn the live show, the visuals and Molly's world into a steady stream of bespoke cuts. The part nobody else can copy.</p>
+      </div>
+      <div class="pcard">
+        <div class="num">02</div>
+        <h3>An audience we own — built, not assumed</h3>
+        <p>We don't have the engaged fanbase yet, so we build it: a list we can email, and a presence that can get a real spike going on day one.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 -->
+  <section class="slide">
+    <div class="kicker stagger">09 — Who we attract</div>
+    <h2 class="stagger">We want <span class="g">listeners</span>, not applause.</h2>
+    <p class="stagger">Here's the trap. If we lead with what we <em>represent</em> — that we're queer, that we're Deaf and hard-of-hearing, that we sign — we pull in people who admire the cause but never actually press play. That admiration feels good, but it doesn't turn into saves, and saves are the whole game. Worse, it trains the algorithm to file us as a cause instead of a band.</p>
+    <p class="stagger">So in the ads and the targeting, we lead with the music and the look — not the identity. People find out who we are once a song's already got their attention. The story is texture that deepens them later, never the hook we use to pull them in.</p>
+    <div class="pull stagger">Work first, <span class="r">story second</span>.</div>
+  </section>
+
+  <!-- 10 -->
+  <section class="slide">
+    <div class="kicker stagger">10 — How we get there</div>
+    <h2 class="stagger">Five phases. <span class="g">No deadline.</span></h2>
+    <p class="stagger">No 90-day countdown. Each phase ends when it's done, then we move on.</p>
+    <div class="phases stagger">
+      <div class="phase"><div class="pn">Phase 01</div><div class="pb"><b>Foundations</b> — stand up the funnel and the list. No ad spend yet.</div></div>
+      <div class="phase"><div class="pn">Phase 02</div><div class="pb"><b>Calibration release</b> — one single through the whole loop, lean budget. The goal is clean data, not a hit.</div></div>
+      <div class="phase"><div class="pn">Phase 03</div><div class="pb"><b>Instrumentation</b> — wire up a dashboard so we know <em>our</em> numbers, not industry averages.</div></div>
+      <div class="phase"><div class="pn">Phase 04</div><div class="pb"><b>Refine</b> — cut what doesn't convert, double down on what does.</div></div>
+      <div class="phase"><div class="pn">Phase 05</div><div class="pb"><b>Steady-state</b> — the engine just runs, and every release compounds.</div></div>
+    </div>
+  </section>
+
+  <!-- 11 / CLOSE -->
+  <section class="slide">
+    <div class="kicker stagger">11 — Wrapping up</div>
+    <h2 class="stagger" style="max-width:24ch">So, the <span class="g">short version</span>.</h2>
+    <p class="stagger">Cast wide to find people, use the catalogue to bring them closer, concentrate to fill rooms, and build a list we own along the way.</p>
+    <p class="stagger">We don't need anyone's permission to do this. We just have to actually do it.</p>
+    <p class="stagger"><strong>First thing:</strong> set up the list, run one release through the whole loop on a small budget to get <em>our own</em> numbers, then decide what's worth scaling. No deadline — each step earns the next.</p>
+    <div class="sig stagger">— Let's give it a crack.</div>
+  </section>
+
+</div>
+
+<!-- chrome -->
+<div class="counter"><b id="cur">1</b> / <span id="total">16</span></div>
+<div class="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move · <kbd>O</kbd> for overview</div>
+<div class="nav">
+  <button id="prev" aria-label="Previous slide">&larr;</button>
+  <button id="next" aria-label="Next slide">&rarr;</button>
+</div>
+
+<!-- overview -->
+<div class="overview" id="overview">
+  <div class="ov-head">
+    <div class="t">The Plan — all slides</div>
+    <button class="c" id="ovclose">Close</button>
+  </div>
+  <div class="ov-grid" id="ovgrid"></div>
+</div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const total = slides.length;
+  let idx = 0;
+
+  const progress = document.getElementById('progress');
+  const cur = document.getElementById('cur');
+  const prevBtn = document.getElementById('prev');
+  const nextBtn = document.getElementById('next');
+  const overview = document.getElementById('overview');
+  const ovgrid = document.getElementById('ovgrid');
+
+  document.getElementById('total').textContent = total;
+
+  // overview titles (pulled from each slide's kicker + h1/h2)
+  const titles = slides.map(s => {
+    const k = s.querySelector('.kicker')?.textContent.trim() || '';
+    const h = s.querySelector('h1, h2')?.textContent.trim() || '';
+    return { k, h };
+  });
+
+  function render(){
+    slides.forEach((s,i)=> s.classList.toggle('active', i===idx));
+    progress.style.width = ((idx)/(total-1))*100 + '%';
+    cur.textContent = idx+1;
+    prevBtn.disabled = idx===0;
+    nextBtn.disabled = idx===total-1;
+    Array.from(ovgrid.children).forEach((c,i)=> c.classList.toggle('current', i===idx));
+  }
+  function go(n){ idx = Math.max(0, Math.min(total-1, n)); render(); }
+  function next(){ go(idx+1); }
+  function prev(){ go(idx-1); }
+
+  prevBtn.addEventListener('click', prev);
+  nextBtn.addEventListener('click', next);
+
+  document.addEventListener('keydown', e=>{
+    if(overview.classList.contains('open')){
+      if(e.key==='Escape'||e.key==='o'||e.key==='O') toggleOverview();
+      return;
+    }
+    if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){ e.preventDefault(); next(); }
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){ e.preventDefault(); prev(); }
+    else if(e.key==='Home'){ go(0); }
+    else if(e.key==='End'){ go(total-1); }
+    else if(e.key==='o'||e.key==='O'){ toggleOverview(); }
+  });
+
+  // click-to-advance on the deck (ignore clicks on links/buttons)
+  document.getElementById('deck').addEventListener('click', e=>{
+    if(e.target.closest('a, button')) return;
+    const x = e.clientX / window.innerWidth;
+    if(x > 0.6) next();
+    else if(x < 0.4) prev();
+  });
+
+  // build overview grid
+  titles.forEach((t,i)=>{
+    const cell = document.createElement('div');
+    cell.className = 'ov-cell';
+    cell.innerHTML = `<div class="ovn">${i===0 ? 'Title' : t.k.replace(/—.*/,'').trim() || ('0'+i)}</div><div class="ovt">${t.h}</div>`;
+    cell.addEventListener('click', ()=>{ go(i); toggleOverview(); });
+    ovgrid.appendChild(cell);
+  });
+
+  function toggleOverview(){
+    overview.classList.toggle('open');
+    if(overview.classList.contains('open')){
+      Array.from(ovgrid.children).forEach((c,i)=> c.classList.toggle('current', i===idx));
+    }
+  }
+  document.getElementById('ovclose').addEventListener('click', toggleOverview);
+
+  // slide 6 — interactive shape
+  const flowBtns = document.querySelectorAll('.flow-node');
+  const fdPanels = document.querySelectorAll('.fd-panel');
+  const flowInteractive = document.querySelector('.flow-interactive');
+  const flowDetail = document.getElementById('flowDetail');
+  if(flowInteractive) flowInteractive.addEventListener('click', e=> e.stopPropagation());
+  if(flowDetail) flowDetail.addEventListener('click', e=> e.stopPropagation());
+
+  function setMore(btn, open){ const m=btn.querySelector('.more'); if(m) m.textContent = open ? 'Hide' : 'View details'; }
+  function openPanel(target){
+    flowBtns.forEach(b=>{ const on=b.dataset.target===target; b.classList.toggle('active', on); setMore(b, on); });
+    fdPanels.forEach(p=> p.classList.toggle('show', p.dataset.panel===target));
+  }
+  function closeAll(){
+    flowBtns.forEach(b=>{ b.classList.remove('active'); setMore(b,false); });
+    fdPanels.forEach(p=> p.classList.remove('show'));
+  }
+
+  flowBtns.forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      if(flowInteractive) flowInteractive.classList.remove('hint-on');
+      const target = btn.dataset.target;
+      if(btn.classList.contains('active')){ closeAll(); return; }
+      openPanel(target);
+      const panel = document.querySelector('.fd-panel[data-panel="'+target+'"]');
+      if(panel){ setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'center'}),70); }
+    });
+  });
+
+  // Discover expanded by default
+  openPanel('discover');
+
+  render();
+</script>
+</body>
+</html>
