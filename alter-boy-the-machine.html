@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alter Boy — The Machine</title>
+<style>
+  :root{
+    --bg:#0f0e13;
+    --bg-soft:#17151d;
+    --panel:#1d1b25;
+    --panel-2:#252330;
+    --line:#322f3d;
+    --ink:#f3f1f7;
+    --ink-soft:#b7b3c4;
+    --ink-faint:#807c8f;
+    --accent:#e8c14a;      /* signature gold */
+    --accent-soft:#3a3320;
+    --hvn:#5fd0c5;          /* HVN role colour */
+    --hvn-soft:#173431;
+    --gate:#e8765f;         /* irreversible gates */
+    --gate-soft:#3a221d;
+    --r:14px;
+    --maxw:1080px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent);text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+
+  /* ---------- top nav ---------- */
+  .nav{position:sticky;top:0;z-index:50;background:rgba(15,14,19,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .nav .wrap{display:flex;align-items:center;gap:6px;height:54px;overflow-x:auto}
+  .nav .brand{font-weight:700;letter-spacing:.04em;margin-right:auto;white-space:nowrap;font-size:14px}
+  .nav .brand b{color:var(--accent)}
+  .nav a{color:var(--ink-soft);font-size:13px;padding:6px 11px;border-radius:99px;white-space:nowrap}
+  .nav a:hover{background:var(--panel);color:var(--ink)}
+
+  /* ---------- hero ---------- */
+  .hero{padding:70px 0 40px;border-bottom:1px solid var(--line);background:
+     radial-gradient(900px 400px at 80% -10%,rgba(232,193,74,.10),transparent 60%);}
+  .eyebrow{color:var(--accent);font-size:13px;letter-spacing:.22em;text-transform:uppercase;font-weight:600}
+  h1{font-size:clamp(34px,6vw,58px);line-height:1.04;margin:14px 0 0;letter-spacing:-.02em}
+  .lead{font-size:clamp(18px,2.4vw,22px);color:var(--ink-soft);max-width:760px;margin:22px 0 0}
+  .lead b{color:var(--ink)}
+  .for-hvn{display:inline-flex;align-items:center;gap:8px;margin-top:28px;padding:8px 14px;border:1px solid var(--hvn);color:var(--hvn);
+    border-radius:99px;font-size:13px;font-weight:600;background:var(--hvn-soft)}
+  .for-hvn .dot{width:8px;height:8px;border-radius:50%;background:var(--hvn)}
+
+  section{padding:54px 0;border-bottom:1px solid var(--line)}
+  .kicker{color:var(--accent);font-size:12px;letter-spacing:.2em;text-transform:uppercase;font-weight:700}
+  h2{font-size:clamp(24px,3.4vw,34px);margin:10px 0 6px;letter-spacing:-.01em}
+  .sub{color:var(--ink-soft);max-width:760px;margin:0 0 26px}
+
+  /* ---------- vision cards ---------- */
+  .grid{display:grid;gap:16px}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:760px){.g3{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+  .card h3{margin:0 0 6px;font-size:17px}
+  .card p{margin:0;color:var(--ink-soft);font-size:14.5px}
+  .pill{display:inline-block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);
+    background:var(--accent-soft);border-radius:99px;padding:3px 9px;font-weight:700;margin-bottom:10px}
+
+  /* ---------- staircase gantt ---------- */
+  .legend{display:flex;flex-wrap:wrap;gap:16px;margin:0 0 18px;font-size:12.5px;color:var(--ink-soft)}
+  .legend span{display:inline-flex;align-items:center;gap:7px}
+  .swatch{width:13px;height:13px;border-radius:4px;display:inline-block}
+  .stair{overflow-x:auto;padding-bottom:6px}
+  .stair-inner{min-width:760px}
+  .stair-head{display:grid;grid-template-columns:120px repeat(8,1fr);gap:4px;margin-bottom:6px}
+  .stair-head div{font-size:11px;color:var(--ink-faint);text-align:center;padding:4px 0}
+  .stair-head div:first-child{text-align:left}
+  .row{display:grid;grid-template-columns:120px repeat(8,1fr);gap:4px;margin-bottom:6px;align-items:center}
+  .row .rlabel{font-size:12.5px;color:var(--ink-soft);font-weight:600}
+  .row .rlabel small{display:block;color:var(--ink-faint);font-weight:400;font-size:11px}
+  .seg{height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:10.5px;
+    font-weight:700;color:#0f0e13;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;border:1px solid transparent;white-space:nowrap;overflow:hidden}
+  .seg:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.4)}
+  .seg.s0{background:#6b6780;color:#fff}
+  .seg.s1{background:#8aa9c9}
+  .seg.s2{background:#5fd0c5}     /* cut — HVN hot */
+  .seg.s3{background:#c7b3e8}
+  .seg.s4{background:#e8c14a}     /* window */
+  .seg.s5{background:#9fcf8e}
+  .seg.hot{box-shadow:0 0 0 2px var(--gate) inset}
+  .stair-note{font-size:12.5px;color:var(--ink-faint);margin-top:12px;display:flex;gap:18px;flex-wrap:wrap}
+  .stair-foot{margin-top:14px;background:var(--bg-soft);border:1px dashed var(--line);border-radius:10px;padding:11px 14px;font-size:12.5px;color:var(--ink-soft)}
+
+  /* ---------- accordions ---------- */
+  .acc{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-bottom:12px;background:var(--panel)}
+  .acc-head{display:flex;align-items:center;gap:14px;padding:16px 18px;cursor:pointer;user-select:none}
+  .acc-head:hover{background:var(--panel-2)}
+  .acc-num{flex:none;width:34px;height:34px;border-radius:9px;background:var(--bg-soft);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:var(--accent)}
+  .acc-title{flex:1;min-width:0}
+  .acc-title h3{margin:0;font-size:16.5px}
+  .acc-title p{margin:2px 0 0;font-size:13px;color:var(--ink-faint)}
+  .acc-tags{display:flex;gap:6px;flex:none;align-items:center}
+  .tag{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;border-radius:99px;white-space:nowrap}
+  .tag.hvn{color:var(--hvn);background:var(--hvn-soft);border:1px solid var(--hvn)}
+  .tag.gate{color:var(--gate);background:var(--gate-soft);border:1px solid var(--gate)}
+  .chev{flex:none;color:var(--ink-faint);transition:transform .2s ease;font-size:13px}
+  .acc.open .chev{transform:rotate(90deg)}
+  .acc-body{display:none;padding:0 18px 20px;border-top:1px solid var(--line)}
+  .acc.open .acc-body{display:block}
+  .acc-body h4{margin:18px 0 6px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint)}
+  .acc-body p{margin:0 0 10px;color:var(--ink-soft);font-size:14.5px}
+  .acc-body .who{display:grid;gap:8px;margin:4px 0 0}
+  .who-row{display:grid;grid-template-columns:96px 1fr;gap:12px;font-size:14px;align-items:start}
+  .who-row .role{font-weight:700;color:var(--ink)}
+  .who-row.h .role{color:var(--hvn)}
+  .gatebar{display:inline-flex;align-items:center;gap:8px;margin-top:8px;font-size:13px;color:var(--gate);
+    background:var(--gate-soft);border:1px solid var(--gate);border-radius:8px;padding:6px 11px;font-weight:600}
+  .none-gate{color:var(--ink-faint);font-size:13px;font-style:italic}
+
+  .expand-all{font-size:12.5px;color:var(--ink-soft);cursor:pointer;border:1px solid var(--line);background:var(--panel);
+    border-radius:99px;padding:6px 14px;margin-bottom:16px;display:inline-block}
+  .expand-all:hover{background:var(--panel-2);color:var(--ink)}
+
+  /* ---------- op model split ---------- */
+  .twocol{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:760px){.twocol{grid-template-columns:1fr}}
+
+  /* ---------- principles strip ---------- */
+  .spine{display:grid;gap:10px}
+  .spine div{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);
+    border-radius:8px;padding:12px 16px;font-size:14.5px;color:var(--ink-soft)}
+  .spine div b{color:var(--ink)}
+
+  footer{padding:40px 0 70px;color:var(--ink-faint);font-size:13px}
+  .hvn-inline{color:var(--hvn);font-weight:600}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <div class="wrap">
+    <span class="brand">ALTER&nbsp;BOY · <b>The Machine</b></span>
+    <a href="#vision">Vision</a>
+    <a href="#pipeline">The Pipeline</a>
+    <a href="#lifecycle">A Release, Stage by Stage</a>
+    <a href="#opmodel">How We Plan</a>
+    <a href="#yourole">Where You Fit</a>
+  </div>
+</div>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">The vision, and how we'll work</div>
+    <h1>We've got the music.<br>Now we build the machine that gets it heard.</h1>
+    <p class="lead">A repeatable engine that earns <b>algorithmic playlist placement</b> — through front-loaded ad spend and a day-one save spike from an audience we own — so we can <b>fill rooms</b>. Streams are the instrument; the room is the point.</p>
+    <div class="for-hvn"><span class="dot"></span> Built for HVN — your role is flagged in teal throughout</div>
+  </div>
+</header>
+
+<!-- VISION -->
+<section id="vision">
+  <div class="wrap">
+    <div class="kicker">The Vision · the short version</div>
+    <h2>Five things that won't change</h2>
+    <p class="sub">The strategy is settled. Everything below this rests on these. They're the reason the process looks the way it does.</p>
+    <div class="grid g3">
+      <div class="card"><span class="pill">North star</span><h3>Saves, not streams</h3><p>We optimise for saves first, then completion and low early skips. That's the signal the algorithm reads as "people want this."</p></div>
+      <div class="card"><span class="pill">The fuse</span><h3>Front-loaded windows</h3><p>We pour spend into the first 3–10 days of a release, not a constant always-on trickle. A concentrated hit the algorithm can't miss.</p></div>
+      <div class="card"><span class="pill">The backbone</span><h3>An audience we own</h3><p>An email list we control fires a coordinated day-one save spike. Instagram is the day-one rallying surface. We don't rent our launch.</p></div>
+      <div class="card"><span class="pill">The moat</span><h3>Creative rooted in our world</h3><p>We borrow the release <i>mechanics</i> everyone uses — never the faceless creative. Bespoke work grounded in real Alter Boy material is the thing no one can copy.</p></div>
+      <div class="card"><span class="pill">The frame</span><h3>Lead with music & look</h3><p>Never lead with identity. Auslan is choreography and visual signature, not a banner — so the algorithm reads us as a band, not a novelty act.</p></div>
+      <div class="card"><span class="pill">The net</span><h3>The back catalogue catches</h3><p>Five years of material deepens every new listener — turning one-track attention into repeat plays and a real relationship.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- PIPELINE / STAIRCASE -->
+<section id="pipeline">
+  <div class="wrap">
+    <div class="kicker">The Pipeline · the engine over time</div>
+    <h2>We never run one release. We run a staircase.</h2>
+    <p class="sub">At any given week the engine is running several releases at different stages at once — one in its window, one priming, one being cut, a couple slotted behind. The peaks are deliberately staggered so no two releases are demanding the same person in the same week. <b>Tap any block</b> to jump to that stage.</p>
+
+    <div class="legend">
+      <span><i class="swatch" style="background:#6b6780"></i> Harvest (always-on)</span>
+      <span><i class="swatch" style="background:#8aa9c9"></i> Slot</span>
+      <span><i class="swatch" style="background:#5fd0c5"></i> Cut <span style="color:var(--hvn)">· HVN</span></span>
+      <span><i class="swatch" style="background:#c7b3e8"></i> Prime</span>
+      <span><i class="swatch" style="background:#e8c14a"></i> Window</span>
+      <span><i class="swatch" style="background:#9fcf8e"></i> Spillover</span>
+      <span><i class="swatch" style="border:2px solid var(--gate);background:transparent"></i> "Hot" — needs a human</span>
+    </div>
+
+    <div class="stair">
+      <div class="stair-inner">
+        <div class="stair-head">
+          <div>Release</div>
+          <div>wk 1</div><div>wk 2</div><div>wk 3</div><div>wk 4</div><div>wk 5</div><div>wk 6</div><div>wk 7</div><div>wk 8</div>
+        </div>
+
+        <!-- Release A -->
+        <div class="row">
+          <div class="rlabel">Release A <small>furthest along</small></div>
+          <div class="seg s3" data-go="st3">Prime</div>
+          <div class="seg s4 hot" data-go="st4">Window</div>
+          <div class="seg s5" data-go="st5">Spillover</div>
+          <div class="seg s5" data-go="st5">Spillover</div>
+          <div></div><div></div><div></div><div></div>
+        </div>
+
+        <!-- Release B -->
+        <div class="row">
+          <div class="rlabel">Release B</div>
+          <div class="seg s2 hot" data-go="st2">Cut</div>
+          <div class="seg s3" data-go="st3">Prime</div>
+          <div class="seg s4 hot" data-go="st4">Window</div>
+          <div class="seg s5" data-go="st5">Spillover</div>
+          <div class="seg s5" data-go="st5">Spillover</div>
+          <div></div><div></div>
+        </div>
+
+        <!-- Release C -->
+        <div class="row">
+          <div class="rlabel">Release C</div>
+          <div class="seg s1" data-go="st1">Slot</div>
+          <div class="seg s2 hot" data-go="st2">Cut</div>
+          <div class="seg s3" data-go="st3">Prime</div>
+          <div class="seg s4 hot" data-go="st4">Window</div>
+          <div class="seg s5" data-go="st5">Spillover</div>
+          <div></div><div></div>
+        </div>
+
+        <!-- Release D -->
+        <div class="row">
+          <div class="rlabel">Release D <small>just slotted</small></div>
+          <div></div><div></div>
+          <div class="seg s1" data-go="st1">Slot</div>
+          <div class="seg s2 hot" data-go="st2">Cut</div>
+          <div class="seg s3" data-go="st3">Prime</div>
+          <div class="seg s4 hot" data-go="st4">Window</div>
+          <div></div><div></div>
+        </div>
+
+        <!-- Harvest foundation -->
+        <div class="row" style="margin-top:10px">
+          <div class="rlabel" style="color:#6b6780">Library <small>feeds every cut</small></div>
+          <div class="seg s0" data-go="st0" style="grid-column:span 8">Stage 0 · Harvest &amp; tag — always on, shared by all releases &nbsp;·&nbsp; HVN owns this</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stair-note">
+      <span>↑ One <b>vertical slice</b> = one week's real workload across every release in flight.</span>
+    </div>
+    <div class="stair-foot">
+      <b>Why it's built this way:</b> a release takes ~10–12 weeks end to end, and we ship every 4–6 weeks — so 2–3 always overlap. The skill isn't doing one at a time; it's <b>staggering the hot moments</b> (the <span style="color:var(--gate)">red-edged blocks</span>) so the Cut and the Window never pile onto the same person in the same week. The agent runs the connective tissue across all columns at once.
+    </div>
+  </div>
+</section>
+
+<!-- LIFECYCLE -->
+<section id="lifecycle">
+  <div class="wrap">
+    <div class="kicker">A Release · stage by stage</div>
+    <h2>One release, start to finish</h2>
+    <p class="sub">Six stages. The agent does the mechanical work; humans hold taste and the four irreversible gates. <b>Click any stage</b> to open it — who does what, and where the locked decisions sit.</p>
+    <span class="expand-all" id="toggleAll">Expand all stages</span>
+
+    <!-- Stage 0 -->
+    <div class="acc" id="st0">
+      <div class="acc-head">
+        <div class="acc-num">0</div>
+        <div class="acc-title"><h3>Harvest &amp; tag the library</h3><p>Continuous · not per-release</p></div>
+        <div class="acc-tags"><span class="tag hvn">HVN owns</span><span class="chev">▶</span></div>
+      </div>
+      <div class="acc-body">
+        <h4>The point</h4>
+        <p>One searchable, tagged clip library so any release can pull the right footage in seconds. This runs in the background all the time — it's the shared foundation every Cut draws from, not a step we repeat per release.</p>
+        <h4>What happens</h4>
+        <p>Source footage lands in one owned master store (never edited, never deleted). It's auto-sliced into shot-level clips, given lightweight playback proxies, then embedded into a <b>semantic index</b> — so we can search it in plain language ("close-up hand moments, dark and slow, signing leads the frame") instead of maintaining a rigid tag vocabulary. The human job collapses to the one thing a machine can't do: <b>marking the standouts</b>.</p>
+        <h4>Who does what</h4>
+        <div class="who">
+          <div class="who-row"><span class="role">Agent</span><span>Harvest, shot-detection, proxies, embedding, indexing, answering searches at edit time.</span></div>
+          <div class="who-row h"><span class="role">HVN</span><span>The taste layer only — burning down the 5-year backlog up front, flagging <i>hero moments</i> a model can't judge, plus a small pass per new shoot. Far smaller ask than tagging every clip.</span></div>
+        </div>
+        <div style="margin-top:12px"><span class="none-gate">No gate here — fully internal.</span></div>
+        <h4>Still open</h4>
+        <p>Which clip-store + index tool we use (decided by a hands-on spike on real footage). And how we handle hard facts semantics can't — aspect ratio, which shoot, and especially clearance/usage rights — so we never ship a public release pulling from un-cleared footage.</p>
+      </div>
+    </div>
+
+    <!-- Stage 1 -->
+    <div class="acc" id="st1">
+      <div class="acc-head">
+        <div class="acc-num">1</div>
+        <div class="acc-title"><h3>Slot &amp; set the dial</h3><p>~4+ weeks out</p></div>
+        <div class="acc-tags"><span class="tag gate">Publish gate</span><span class="chev">▶</span></div>
+      </div>
+      <div class="acc-body">
+        <h4>The point</h4>
+        <p>Lock what's coming and how hard we'll push it, and seed the brief everything downstream reads. We plan like a label — penciled, reversible dates on the calendar — but never promise the world a date before the track is real.</p>
+        <h4>What happens</h4>
+        <p>The release is penciled onto the roster at a date that holds the rhythm. The agent drafts a <b>release brief</b> from the master + lyrics (tempo, key, energy, mood, themes, sonic-neighbour artists); a human judges it and adds the angle + who-it's-for. Once the master is locked and delivered with enough lead for the editorial pitch, we commit the date and pre-save opens.</p>
+        <h4>Who does what</h4>
+        <div class="who">
+          <div class="who-row"><span class="role">Agent</span><span>Maintains the slot, drafts the brief, preps the distributor submission, runs the master-lock + pitch-lead countdown.</span></div>
+          <div class="who-row"><span class="role">Josh</span><span>The gut call on type, judging the brief, and the publish-gate yes.</span></div>
+        </div>
+        <div class="gatebar">🔒 Publish gate — committing the track + date to the distributor is irreversible (pre-save gets promised).</div>
+      </div>
+    </div>
+
+    <!-- Stage 2 -->
+    <div class="acc" id="st2">
+      <div class="acc-head">
+        <div class="acc-num">2</div>
+        <div class="acc-title"><h3>Curate &amp; cut the kit</h3><p>~4 to 1 weeks out · the moat</p></div>
+        <div class="acc-tags"><span class="tag hvn">HVN leads QC</span><span class="tag gate">Creative gate</span><span class="chev">▶</span></div>
+      </div>
+      <div class="acc-body">
+        <h4>The point</h4>
+        <p>Turn the locked track + the library into the release's creative. This is the moat — where bespoke, grounded work beats the faceless content everyone else runs.</p>
+        <h4>What happens</h4>
+        <p>The agent reads the brief and pulls matching real clips from the library, then assembles a <b>finished draft per cluster</b> to a reusable <i>format recipe</i> — including grounded AI enhancement (animating real stills, building transitions, generating clips anchored to real Alter Boy assets). The hard rule: <b>everything is grounded in our real material and world</b>. Enhancing and generating is fine; untethered generic AI is out.</p>
+        <h4>Who does what</h4>
+        <div class="who">
+          <div class="who-row"><span class="role">Agent</span><span>The assembly machine — retrieval, recipe assembly, grounded enhancement, drafting copy/captions/hooks. Maximum offload.</span></div>
+          <div class="who-row h"><span class="role">HVN &amp; Josh</span><span>Constant QC with full <b>recut authority</b>. This is a real cut-or-recut review, never a rubber stamp — you pick the clips, call the hero moments, judge the grounding, and customise any cluster at will.</span></div>
+        </div>
+        <div class="gatebar">🔒 Creative-public gate — a human approves the footage selection <i>and</i> the finished cut before anything can go public.</div>
+        <h4>Still open</h4>
+        <p>How many starting format recipes, and how we keep the QC gate genuinely substantive when 2–3 releases are in flight at once.</p>
+      </div>
+    </div>
+
+    <!-- Stage 3 -->
+    <div class="acc" id="st3">
+      <div class="acc-head">
+        <div class="acc-num">3</div>
+        <div class="acc-title"><h3>Prime</h3><p>~4 to 1 weeks out · overlaps the Cut</p></div>
+        <div class="acc-tags"><span class="tag gate">Spend · Email · Creative</span><span class="chev">▶</span></div>
+      </div>
+      <div class="acc-body">
+        <h4>The point</h4>
+        <p>Get everything loaded so day zero is a coordinated hit, not a scramble. By the time the window opens we already know which creative wins.</p>
+        <h4>What happens</h4>
+        <p>The four cluster creatives run as <b>creative angles into broad targeting</b> — we read which creative converts rather than guessing interests up front. A <b>pre-release paid push</b> does double duty: it banks pre-saves (the fuse for the day-one spike) and surfaces the winning creative <i>before</i> the window, so the front-load starts already-optimised. The dial goes hard here, before any money moves. Owned channels get warmed and staged to a one-button day-zero fire.</p>
+        <h4>Who does what</h4>
+        <div class="who">
+          <div class="who-row"><span class="role">Agent</span><span>Builds ad sets, drafts the editorial pitch + emails + IG, schedules everything, monitors the pre-release read, reports.</span></div>
+          <div class="who-row"><span class="role">Josh</span><span>Holds the gates, confirms the dial, submits the editorial pitch.</span></div>
+        </div>
+        <div class="gatebar">🔒 Spend · 🔒 Email · 🔒 Creative-public — every channel that goes live or spends money waits on a human yes.</div>
+      </div>
+    </div>
+
+    <!-- Stage 4 -->
+    <div class="acc" id="st4">
+      <div class="acc-head">
+        <div class="acc-num">4</div>
+        <div class="acc-title"><h3>The Window</h3><p>Days 0–10 · heaviest 0–3</p></div>
+        <div class="acc-tags"><span class="tag gate">Email · Spend</span><span class="chev">▶</span></div>
+      </div>
+      <div class="acc-body">
+        <h4>The point</h4>
+        <p>Manufacture the day-0–10 momentum the algorithm reads, and steer the budget by signal. This is the loud part.</p>
+        <h4>What happens</h4>
+        <p>Day zero: the list fires + IG goes; the DSP drop is automatic (we committed it back at Stage 1). We front-load the <b>known winning creative</b> from hour zero. Because saves lag ~1–2 days but Meta is real-time, we steer on <b>two tiers</b> — real-time Meta proxies to cull losers fast, lagged save-rate for the bigger scaling calls. We only escalate spend on releases beating Alter Boy's <b>own rolling baseline</b>, so we never pour money into the winners of a weak release.</p>
+        <h4>Who does what</h4>
+        <div class="who">
+          <div class="who-row"><span class="role">Agent</span><span>Watches both signal tiers continuously, reports, and <i>proposes</i> every cull/scale move. It never moves money itself.</span></div>
+          <div class="who-row"><span class="role">Josh</span><span>Fires the day-0 email, approves every spend move at the gate.</span></div>
+        </div>
+        <div class="gatebar">🔒 Email (day-zero broadcast) · 🔒 Spend (front-load + every escalation).</div>
+      </div>
+    </div>
+
+    <!-- Stage 5 -->
+    <div class="acc" id="st5">
+      <div class="acc-head">
+        <div class="acc-num">5</div>
+        <div class="acc-title"><h3>Spillover &amp; learn</h3><p>Day 11 → +2 months · the loop-closer</p></div>
+        <div class="acc-tags"><span class="tag gate">Email</span><span class="chev">▶</span></div>
+      </div>
+      <div class="acc-body">
+        <h4>The point</h4>
+        <p>Convert the algorithmic pickup into owned audience + catalogue depth, and feed what we learned back into the next release.</p>
+        <h4>What happens</h4>
+        <p>You can't email a Spotify listener, so most attention stays rented inside the DSP. Rather than fight that, we <b>deepen</b> it — routing the one-track listener into the 5-year back catalogue so attention becomes repeat plays — and capture only the keenest into the owned list. No post-window spend. Then we <b>score what won</b> (which clips, recipes, clusters converted); a human ratifies that digest before it biases the next release's curation, with an <b>exploration slice</b> reserved each time so the loop keeps discovering instead of making every release look the same.</p>
+        <h4>Who does what</h4>
+        <div class="who">
+          <div class="who-row"><span class="role">Agent</span><span>Routes, captures, logs, maintains the scores, drafts the nurture sends + the learning digest.</span></div>
+          <div class="who-row"><span class="role">Josh</span><span>Ratifies the digest before it shapes creative; holds the email gate.</span></div>
+        </div>
+        <div class="gatebar">🔒 Email — capture/nurture sends only. No spend gate re-enters.</div>
+        <h4>The two-speed read</h4>
+        <p>The <b>fast read</b> (creative ranking, save-rate, baseline) is ready when the window closes → informs the <i>next</i> release. The <b>full read</b> (catalogue depth, rented→owned over two months) lands later → informs the release <i>after</i> that.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- OP MODEL -->
+<section id="opmodel">
+  <div class="wrap">
+    <div class="kicker">How We Plan · the layer above the release</div>
+    <h2>Planned, but agile</h2>
+    <p class="sub">The lifecycle governs one release. This layer governs the <i>set</i> of them — a rolling plan the band writes toward, re-planned each cycle as data arrives. Not a fixed calendar; not seat-of-the-pants either. <b>Click to open each.</b></p>
+
+    <div class="acc" id="op1">
+      <div class="acc-head"><div class="acc-num">›</div><div class="acc-title"><h3>The roster — what's coming, and when</h3><p>Rolling-wave planning</p></div><div class="acc-tags"><span class="chev">▶</span></div></div>
+      <div class="acc-body">
+        <h4>Three horizons</h4>
+        <p><b>Committed:</b> the next 2 releases — song locked, in production, dial set. Firm. <b>Planned:</b> the ~3 beyond — a type + intent ("single, movement-led, targets the dance cluster"), song maybe unfinished; the band writes toward them. <b>Placeholder:</b> a loose backlog of themes and audience gaps, no song attached yet.</p>
+        <h4>Singles anchor, remixes fill</h4>
+        <p>Singles are the anchors — dialled up, they set the editorial-pitch moments and carry the cadence. Remixes/versions are the shock-absorber — chosen reactively to cover the rhythm when no new single's ready, or to reach a cluster recent singles missed. No fixed ratio.</p>
+      </div>
+    </div>
+
+    <div class="acc" id="op2">
+      <div class="acc-head"><div class="acc-num">›</div><div class="acc-title"><h3>Planning drives the songwriting</h3><p>The differentiator</p></div><div class="acc-tags"><span class="chev">▶</span></div></div>
+      <div class="acc-body">
+        <h4>A reach brief, never a song brief</h4>
+        <p>The plan can name the <i>market-facing frame</i> — target cluster, rough energy/tempo/mood, format and window implications — framed in Alter Boy's own vocabulary ("lean into the Auslan-as-choreography side of who you are"). It <b>never</b> touches creative substance: themes, lyrics, hooks, meaning. It's an invitation with a target, not a directive.</p>
+        <h4>Inspiration has right-of-way</h4>
+        <p>Most releases come from the band's natural flow. We only "write to a slot" when the data proves a gap <i>and</i> the band's up for it — and an empty slot never forces a bad song. If nothing real is ready it converts to a remix or organic content, and the intent rolls forward. The plan biases attention; it never mandates output.</p>
+        <h4>What the machine feeds back</h4>
+        <p>Two distinct layers. <b>Reach learnings</b> tune the roster and the format recipes. <b>Sonic-resonance learnings</b> — what musically resonates in converting tracks — flow back to the band as creative intelligence to inform writing, never as an instruction. The machine surfaces what's working; the band decides if and how it shapes the craft.</p>
+      </div>
+    </div>
+
+    <div class="acc" id="op3">
+      <div class="acc-head"><div class="acc-num">›</div><div class="acc-title"><h3>The board &amp; cadence</h3><p>Making it visible, holding the rhythm</p></div><div class="acc-tags"><span class="chev">▶</span></div></div>
+      <div class="acc-body">
+        <h4>One flow, left to right</h4>
+        <p>Themes → Planned → Slot → Cut → Prime → Window → Spillover → Archived. A bespoke board (not an off-the-shelf PM tool) where a card <i>is</i> a roster slot. The "hot" columns — Cut and Window — make overload visible: too many cards there at once is the signal to stagger.</p>
+        <h4>Hold the rhythm honestly</h4>
+        <p>The rule on cadence: <b>slip freely before the promise, protect after it</b>. The promise line is when pre-save goes live / we pitch editorial — that's the public commitment. Before it, moving dates is just re-planning. To protect a promised date we'd rather drop the dial (ship a lighter cut or a remix) than break it. And we never dress up a release too thin to clear the signal floor — that's worse than a gap; it wastes the front-load and trains the algorithm wrong.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- YOUR ROLE -->
+<section id="yourole">
+  <div class="wrap">
+    <div class="kicker">Where You Fit · HVN</div>
+    <h2>Your two homes in the machine</h2>
+    <p class="sub">Almost everything is agent-run. Human craft lands in a few specific, high-value places — and two of them are yours.</p>
+    <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px">
+      <div class="card" style="border-left:3px solid var(--hvn)">
+        <span class="pill" style="color:var(--hvn);background:var(--hvn-soft)">Stage 0 · always on</span>
+        <h3>You own the library</h3>
+        <p>The whole machine pulls from one searchable footage library, and you own it. The agent does all the mechanical work — slicing, embedding, indexing. Your job is the taste call a model can't make: burning down the 5-year backlog up front and flagging the <b>hero moments</b>. Populating the library is the gate on starting the mechanism for real.</p>
+      </div>
+      <div class="card" style="border-left:3px solid var(--hvn)">
+        <span class="pill" style="color:var(--hvn);background:var(--hvn-soft)">Stage 2 · every release</span>
+        <h3>You lead QC on the cut</h3>
+        <p>The agent assembles a finished draft per cluster; you and Josh are the constant QC layer with full <b>recut authority</b>. You pick the clips, call the hero moments, judge whether the AI work is properly grounded in our world, and customise any cluster. This is the moat — protected by your taste and the gate, not by limiting what the agent can reach for.</p>
+      </div>
+    </div>
+    <div class="spine" style="margin-top:18px">
+      <div><b>Why it's a smaller ask than the old plan:</b> the old approach wanted three people correcting machine tags on every single clip. Semantic search killed that. You're left with only the judgments that genuinely need a human eye.</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    Alter Boy Growth · vision &amp; process for HVN · drawn from the operating model (01) and release lifecycle (02), settled 29 June 2026.<br>
+    A fuller reference will follow once a few build decisions and the build scope are locked.
+  </div>
+</footer>
+
+<script>
+  // segment → open + scroll to stage
+  document.querySelectorAll('.seg[data-go]').forEach(function(s){
+    s.addEventListener('click',function(){
+      var id=s.getAttribute('data-go');
+      var el=document.getElementById(id);
+      if(!el) return;
+      el.classList.add('open');
+      el.scrollIntoView({behavior:'smooth',block:'center'});
+      el.style.transition='box-shadow .3s';
+      el.style.boxShadow='0 0 0 2px var(--accent)';
+      setTimeout(function(){el.style.boxShadow='none';},1200);
+    });
+  });
+
+  // accordions
+  document.querySelectorAll('.acc-head').forEach(function(h){
+    h.addEventListener('click',function(){
+      h.parentElement.classList.toggle('open');
+    });
+  });
+
+  // expand all
+  var btn=document.getElementById('toggleAll');
+  btn.addEventListener('click',function(){
+    var accs=document.querySelectorAll('#lifecycle .acc');
+    var anyClosed=Array.prototype.some.call(accs,function(a){return !a.classList.contains('open');});
+    accs.forEach(function(a){a.classList.toggle('open',anyClosed);});
+    btn.textContent=anyClosed?'Collapse all stages':'Expand all stages';
+  });
+</script>
+
+</body>
+</html>
