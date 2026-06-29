@@ -1,2 +1,5 @@
 .DS_Store
 *.log
+
+# Claude Code worktrees (local-only isolation dirs)
+.claude/worktrees/
